@@ -1,0 +1,30 @@
+{
+  "network": "Solana Mainnet",
+  "genesis_hash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+  "quoted_at_utc": "2026-11-08T12:51:28.724340+00:00",
+  "source_receipt_sha256": "2d5a3512bb368c23a5d9c79f73c9e0adf520957d7e9092227c6442d5390a7359",
+  "v1_feature_active": true,
+  "feature_activation_slot": 447120000,
+  "broadcast_transactions": 0,
+  "authorization_fee_lamports_by_observed_signer_layouts": 445000,
+  "priority_fee_lamports": 0,
+  "temporary_account_bytes": 41359,
+  "refundable_rent_lamports": 210753960,
+  "signer_layout_quotes": [
+    {
+      "required_signatures": 1,
+      "transactions_in_measured_job": 87,
+      "largest_signed_transaction_bytes": 3919,
+      "quoted_fee_lamports": 5000,
+      "context_slot": 466921625
+    },
+    {
+      "required_signatures": 2,
+      "transactions_in_measured_job": 1,
+      "largest_signed_transaction_bytes": 440,
+      "quoted_fee_lamports": 10000,
+      "context_slot": 466921627
+    }
+  ],
+  "scope": "Read-only quote for the observed v1 signature layouts with a fresh Mainnet blockhash. Application deployment and relayer service charges are separate."
+}

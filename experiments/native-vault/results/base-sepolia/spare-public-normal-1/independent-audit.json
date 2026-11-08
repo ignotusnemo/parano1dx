@@ -1,0 +1,116 @@
+{
+  "audited_at_utc": "2026-11-08T13:00:27.611Z",
+  "rpc_endpoint": "https://base-sepolia-rpc.publicnode.com",
+  "chain_id": 84532,
+  "source_receipt_sha256": "7761acea33d5fbfc7da57189e3dea4fc6a4b5898d3f05beb01f2c824d393cdba",
+  "signed_transactions_checked": 14,
+  "canonical_receipts_verified": true,
+  "code_hashes_verified": true,
+  "all_64_queries_present": true,
+  "typed_request_verified": true,
+  "payout_balances_verified": true,
+  "nonce_consumed_once": true,
+  "fees_reconciled": true,
+  "withdrawal_hash": "0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+  "receipts": [
+    {
+      "hash": "0x009e394777a37bdfb110ad85d2c435c5c0a6d8d4bde38389f2baf709c2501ba2",
+      "block_number": 56103536,
+      "block_hash": "0x18e7948e93d70a7d9af9f08e8ed7c009c84bf4055d04237a2f957e9796955cd2",
+      "gas_used": "4193045",
+      "total_fee_wei": "25158270015418"
+    },
+    {
+      "hash": "0x95891df40d3da302b498c70497da3cd4afd1fa6f0b86bb686f21828496bb57c9",
+      "block_number": 56103540,
+      "block_hash": "0xf61c9dbf03b8511a6fb524ef3bdb2d52d201bad98fbbd134b8b5da257c056838",
+      "gas_used": "1228907",
+      "total_fee_wei": "7373442004992"
+    },
+    {
+      "hash": "0xad55ea1bf398693c9e39500803927a7fcea49a073b215638ee78ee074809597f",
+      "block_number": 56103544,
+      "block_hash": "0x822f8a9f03d249d4cf6128ba647959f64f24574bedffaa070f9b387b23f606a8",
+      "gas_used": "908207",
+      "total_fee_wei": "5449242000163"
+    },
+    {
+      "hash": "0x6f662ca9a1bd0759481c2afb170c3e4be5b6d3bd9e0b499c2cc5f32b04cfee9a",
+      "block_number": 56103548,
+      "block_hash": "0xde2c3fe9b89552c0747c5dd8c4583139bc28c6008c645110ac0d2f11adfac367",
+      "gas_used": "21062",
+      "total_fee_wei": "126372000163"
+    },
+    {
+      "hash": "0x1d91126866f08e821f1b692edf94231215fec9e7446e3eab22b6c881d6357908",
+      "block_number": 56103558,
+      "block_hash": "0x4ac43b640a048ae4737721e92aeef688104673b499be20e78308e085344f2201",
+      "gas_used": "6702306",
+      "total_fee_wei": "40213836013467"
+    },
+    {
+      "hash": "0xffde6d3b8b77795ceb68b55094361de8b47ca320767757e3eb3ae01569ded48d",
+      "block_number": 56103563,
+      "block_hash": "0x90d46e347dc22859161fcbacb429344e4449e7fa75eded3d13da7414d62eb920",
+      "gas_used": "2971275",
+      "total_fee_wei": "17827650013467"
+    },
+    {
+      "hash": "0x9f366f86cdaa5b2764411c78953bb6c4f285f538be0358ec9e0086caa083fea1",
+      "block_number": 56103576,
+      "block_hash": "0x6c5c12cebf9362284fb7420c3ea6070d5fdcd6021e60349a6e2c48334c888c49",
+      "gas_used": "11770641",
+      "total_fee_wei": "70623846111164"
+    },
+    {
+      "hash": "0xa17a3f1a68cab4ba23c20e50308d81ec55442c50b674ff7a91ed5d2517d812d6",
+      "block_number": 56103582,
+      "block_hash": "0xa093e12f9b1ba670851fe18f08b9deefa060a089f26feaed71097f53bcaaf77f",
+      "gas_used": "11769861",
+      "total_fee_wei": "70674884633289"
+    },
+    {
+      "hash": "0x9a1f783401c95b63d1c445c751ee492cc8f84e316687171d64bc8caab9139f62",
+      "block_number": 56103590,
+      "block_hash": "0xc9c1553074f98dc1bf2b89cba4919b1ce80698e6c2e7fddbdefbe28df1de5ebe",
+      "gas_used": "11771588",
+      "total_fee_wei": "70629528111162"
+    },
+    {
+      "hash": "0x47b0d3f4a3dc787ffbb04cb5a009773b4f151055b81cd7658a61a9e12c705f41",
+      "block_number": 56103596,
+      "block_hash": "0x79719bec053d31b13d6ed461fa4c35a629a71a5ca453b3530b13c2b97ba2e6ee",
+      "gas_used": "11770191",
+      "total_fee_wei": "70669992403881"
+    },
+    {
+      "hash": "0x40e064967c164bad0d9135807c83a1defc496816f510fb4b144191a4a1ee80d2",
+      "block_number": 56103603,
+      "block_hash": "0xfdc0e96d971382cbdbfaaedb4bfe840d7436fccdc2cdfabd27dd12c01ead4443",
+      "gas_used": "11770239",
+      "total_fee_wei": "70669409605337"
+    },
+    {
+      "hash": "0x9443588bbbbdcbcd5bc88f5003b31eb0f071aaa64b64f7875d067ce81d9a8a6f",
+      "block_number": 56103609,
+      "block_hash": "0x784987f0c5e0404d27187e922038cd3bfad61fa344040e3858eb69a7ad55fc30",
+      "gas_used": "11770013",
+      "total_fee_wei": "70670924567297"
+    },
+    {
+      "hash": "0xe77e0177c2e929dfc85ef6e335e3968be6e773cbcac8e4d2caa542d482aea1f5",
+      "block_number": 56103615,
+      "block_hash": "0xeb5c6d0263342f635e5e055ee88adeaa4f3f137fc5df7498ec10df5efd79b4fa",
+      "gas_used": "11771456",
+      "total_fee_wei": "70683473381637"
+    },
+    {
+      "hash": "0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+      "block_number": 56103621,
+      "block_hash": "0xe746315b257e113c5c5a02183a437a4f63ef5094610017d31aba9e5dc10c9516",
+      "gas_used": "11818845",
+      "total_fee_wei": "70967200421271"
+    }
+  ],
+  "scope": "Read-only automated cross-check through an RPC independent of the submitting endpoint."
+}

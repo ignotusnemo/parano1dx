@@ -1,0 +1,5 @@
+{
+  "cpu_model": "13th Gen Intel(R) Core(TM) i7-1365U",
+  "machine": "x86_64",
+  "native_timings_scope": "Single fresh-proof sample. Preprocessing setup, fixture export and adversarial checks are outside the proof timer."
+}

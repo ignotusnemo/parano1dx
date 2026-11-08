@@ -1,0 +1,19 @@
+Parano1dX
+Copyright 2026 Parano1d contributors.
+
+The first-party source is distributed under Apache-2.0, except files that
+identify another license. Solidity source files carry MIT identifiers.
+
+The proof backend is pinned to Plonky3 revision
+0d803737b681774186cd283b1fd2d8e493655c82.
+https://github.com/Plonky3/Plonky3
+
+The vendor directory retains the original Apache-2.0 and MIT licenses of
+p3-air, p3-uni-stark, p3-fri and p3-keccak. The local copies adapt transcript
+binding, compiled verification, streaming checkpoints and SBF execution.
+The talc allocator retains its own license and SBF integration changes.
+
+Public experiment artifacts include transaction receipts, signed wires,
+public proofs and testnet program bytes. Local fixtures use documented
+public research seeds. Private research roots and network credentials are
+stored separately.

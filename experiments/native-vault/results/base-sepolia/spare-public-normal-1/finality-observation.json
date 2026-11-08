@@ -1,0 +1,9 @@
+{
+  "chain_id": 84532,
+  "withdrawal_hash": "0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+  "confirmed_s": 14.455491701,
+  "safe_observed_s": 178.852059634,
+  "finalized_observed_s": 1171.6858655929998,
+  "observed_at_utc": "2026-11-08T13:15:32.241Z",
+  "scope": "Separate L1 publication and finality observations. Null means the level has not yet been observed."
+}

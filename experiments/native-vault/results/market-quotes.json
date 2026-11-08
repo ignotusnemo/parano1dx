@@ -1,0 +1,27 @@
+{
+  "quoted_at_utc": "2026-11-08T09:09:14.614043+00:00",
+  "asset_quote_at_utc": "2026-11-08T09:09:14.614043+00:00",
+  "eth_usd": 2235.8,
+  "sol_usd": 89.19,
+  "eth_gas_price_wei": 45327351,
+  "gas_source": "https://rpc.flashbots.net",
+  "gas_rpc_response": {
+    "jsonrpc": "2.0",
+    "result": "0x2b3a3f7",
+    "id": 1
+  },
+  "asset_source": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,solana&vs_currencies=usd&include_last_updated_at=true",
+  "asset_last_updated_at": {
+    "ethereum": 1794128892,
+    "solana": 1794128902
+  },
+  "L2_rpc_quotes": {
+    "https://mainnet.optimism.io": "HTTP 403",
+    "https://mainnet.base.org": {
+      "chain_id": 8453,
+      "quoted_at_utc": "2026-11-08T09:50:09.029Z",
+      "quote_file": "base/fee-quote.json"
+    },
+    "https://arb1.arbitrum.io/rpc": "HTTP 403"
+  }
+}

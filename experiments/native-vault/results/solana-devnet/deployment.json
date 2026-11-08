@@ -1,0 +1,21 @@
+{
+  "network": "Solana Devnet",
+  "genesis_hash": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "program_id": "J8fsmq8HaDydtfxP9AEdtbVDYBuRbnMVgAhwn9zRn4dS",
+  "program_data": "BESXy4VquLCWAMyDc5FFf33yFFkH4qZbbKVmCeY7jg4u",
+  "elf_sha256": "5e004350c5bb29a1ee70121922638c4cd67e3e7eea7614ab0c803babaef8b974",
+  "elf_bytes": 263848,
+  "immutable_program_verified": true,
+  "network_domain_hex": "2660f6abec724a80f1ed8083e5aa9081ef004d9b5b8e49bd4385da4826c06646",
+  "cargo_features": [
+    "custom-heap",
+    "wide-transport"
+  ],
+  "platform_tools": "v1.58",
+  "source": "experiments/native-vault/solana/",
+  "source_receipt_sha256": "2d5a3512bb368c23a5d9c79f73c9e0adf520957d7e9092227c6442d5390a7359",
+  "build_environment": {
+    "PARANO1DX_SOLANA_NETWORK_HEX": "2660f6abec724a80f1ed8083e5aa9081ef004d9b5b8e49bd4385da4826c06646"
+  },
+  "real_assets_used": false
+}

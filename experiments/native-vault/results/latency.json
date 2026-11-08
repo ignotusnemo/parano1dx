@@ -1,0 +1,122 @@
+{
+  "scope": "Runtime-specific local CPU measurements and separately labeled public Devnet delivery observations.",
+  "local_sample_count": 1,
+  "local_harness_broadcast_transactions": 0,
+  "networks": {
+    "Base": {
+      "runtime": "@ethereumjs/vm 10.0.0",
+      "successful_transactions": 10,
+      "wallet_proving_ms": 53.029377000000004,
+      "native_compiled_verification_ms": 2.649434,
+      "fixture_prover_process_wall_ms": 97.40422899999976,
+      "public_transport_expansion_ms": 99.59443300000021,
+      "successful_transaction_wall_ms": 7396.093215999999,
+      "vm_submit_wall_ms": 7315.234003999998,
+      "local_fixture_processing_ms": 7593.091877999999,
+      "relayer_recovery_events": [
+        {
+          "case": "restart_after_lost_batch_response",
+          "accepted_queries": 16,
+          "cache_reconstructed_from_public_proof": true
+        }
+      ]
+    },
+    "Solana": {
+      "runtime": "solders 0.29.0 LiteSVM",
+      "successful_transactions": 87,
+      "wallet_proving_ms": 54.385852,
+      "native_compiled_verification_ms": 2.602839,
+      "fixture_prover_process_wall_ms": 95.14474800380412,
+      "public_transport_expansion_ms": 105.32597299607005,
+      "successful_transaction_wall_ms": 96.77532089699525,
+      "vm_submit_wall_ms": 77.73948401154485,
+      "local_fixture_processing_ms": 297.24604189686943,
+      "relayer_recovery_events": [
+        {
+          "case": "restart_after_reordered_upload_response_loss",
+          "frame": 15,
+          "resumed_bitmap": 64
+        },
+        {
+          "case": "lost_verification_response",
+          "accepted_query_count": 20,
+          "retry_cannot_advance": true
+        }
+      ]
+    }
+  },
+  "read_only_network_observations": "network-observations.json",
+  "live_solana_devnet": {
+    "scope": "Public Devnet observations from the research VPS. Timers include proof preparation, temporary-account creation, delivery and observed confirmation. Shared deployment and vault setup precede the timer. Payloads use direct validator TPU QUIC, with RPC and WebSocket state observations.",
+    "cases": [
+      {
+        "case": "spare-v1-eager-normal-1",
+        "label": "Normal v1 delivery",
+        "network": "Solana Devnet",
+        "transaction_version": "v1",
+        "upload_chunk_bytes": 3584,
+        "confirmed_s": 18.082503341982374,
+        "observed_finality_s": 21.633847508986946,
+        "proof_preparation_s": 0.27795596097712405,
+        "unique_authorization_transactions": 88,
+        "rebroadcast_submissions": 0,
+        "network_fee_lamports": 445000,
+        "refunded_reserve_lamports": 210753960,
+        "maximum_verification_CU": 1140137,
+        "withdrawal_signature": "3xuJsArGD9oPD815KqNeMyedT57ZVUYQBbkdNzqoDMBsYy9w4vLkotsdKA93RxLYEeczuPqqHpKbhViiJcoTQdb9",
+        "close_signature": "2v3VCVutCFMU5Dd8fkPQ1Kmyoz5uu6FnURQz8QmALL8Zhr2GoLVJQxJx8wmpoJdxd4EpSSjc3JeANWen87eSaEw",
+        "automated_receipt_cross_checks_passed": true,
+        "fault_injection_enabled": false,
+        "receipt": "spare-v1-eager-normal-1/live-result.json",
+        "independent_audit": "spare-v1-eager-normal-1/independent-audit.json",
+        "withdrawal_explorer_url": "https://explorer.solana.com/tx/3xuJsArGD9oPD815KqNeMyedT57ZVUYQBbkdNzqoDMBsYy9w4vLkotsdKA93RxLYEeczuPqqHpKbhViiJcoTQdb9?cluster=devnet"
+      },
+      {
+        "case": "spare-v1-eager-faults-1",
+        "label": "Dropped packet and reordered v1 delivery",
+        "network": "Solana Devnet",
+        "transaction_version": "v1",
+        "upload_chunk_bytes": 3584,
+        "confirmed_s": 22.335705817997223,
+        "observed_finality_s": 26.036355541000376,
+        "proof_preparation_s": 0.2902180710225366,
+        "unique_authorization_transactions": 91,
+        "rebroadcast_submissions": 0,
+        "network_fee_lamports": 460000,
+        "refunded_reserve_lamports": 225993960,
+        "maximum_verification_CU": 1137424,
+        "withdrawal_signature": "5cFg8MmcB5gCoHyfappoBjoPrwdskauV6J6BhgyW7ntsibmHwe72zyL4UYqoRVDTyNSQdmveTuZj1JzXvFMzuMcV",
+        "close_signature": "3EveJk9ptWXqbJGFgmyBo4cW2DRhkki2n8UXKoMD6LaaJsB6UtByLqr2W2yAYKPhXpCrfuQuYiVvz3Wps5DJnrVr",
+        "automated_receipt_cross_checks_passed": true,
+        "fault_injection_enabled": true,
+        "receipt": "spare-v1-eager-faults-1/live-result.json",
+        "independent_audit": "spare-v1-eager-faults-1/independent-audit.json",
+        "withdrawal_explorer_url": "https://explorer.solana.com/tx/5cFg8MmcB5gCoHyfappoBjoPrwdskauV6J6BhgyW7ntsibmHwe72zyL4UYqoRVDTyNSQdmveTuZj1JzXvFMzuMcV?cluster=devnet"
+      }
+    ]
+  },
+  "live_base_sepolia": {
+    "chain_id": 84532,
+    "confirmed_s": 14.455491701,
+    "authorization_transactions": 10,
+    "authorization_gas": 103886415,
+    "authorization_fee_wei": "623630745261972",
+    "execution_fee_wei": "623630744345448",
+    "l1_data_fee_wei": "916524",
+    "operator_fee_wei": "0",
+    "wallet_proving_ms": 111.463983,
+    "withdrawal_hash": "0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+    "withdrawal_explorer_url": "https://sepolia.basescan.org/tx/0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+    "timing_scope": "Proof preparation, expansion, read-only adversarial checks and ten sequential L2 receipt observations. Shared deployment and deposit precede the timer.",
+    "fee_scope": "Actual Base Sepolia receipt fees in test ETH. Mainnet pricing is a separate read-only quote.",
+    "finality_observation": {
+      "chain_id": 84532,
+      "withdrawal_hash": "0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+      "confirmed_s": 14.455491701,
+      "safe_observed_s": 178.852059634,
+      "finalized_observed_s": 1171.6858655929998,
+      "observed_at_utc": "2026-11-08T13:15:32.241Z",
+      "scope": "Separate L1 publication and finality observations. Null means the level has not yet been observed."
+    }
+  }
+}

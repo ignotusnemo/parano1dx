@@ -1,0 +1,38 @@
+{
+  "primary_evm_network": "Base",
+  "base": {
+    "chain_id": 8453,
+    "authorization_transactions": 10,
+    "authorization_gas": 103890467,
+    "execution_fee_usd": 1.3936698367116,
+    "l1_data_fee_usd": 0.005628753479282915,
+    "operator_fee_wei": "0",
+    "total_fee_ETH": 0.000625860358793668,
+    "total_fee_USD": 1.399298590190883,
+    "suggested_gas_price_wei": "6000000",
+    "quoted_at_utc": "2026-11-08T09:50:09.029Z",
+    "block": {
+      "number": 54705166,
+      "hex": "0x342bc0e",
+      "hash": "0x2abc1efba0d09db177d5bb2d94d6011c51096aad1d62fb15bd19aea7b9330c38",
+      "timestamp": 1794131408,
+      "base_fee_wei": "5000000",
+      "gas_limit": 40000000,
+      "extra_data": "0x01000003e80000000500000000004c4b40"
+    },
+    "scope": "One complete successful authorization and native withdrawal. Shared deployment, vault creation and rejected test cases are separate. L1 fee uses unsigned RLP because the oracle adds signature padding. Execution gas is measured locally, not a mainnet transaction receipt."
+  },
+  "solana_authorization_transactions": 87,
+  "solana_authorization_fee_lamports": 470000,
+  "solana_authorization_fee_SOL": 0.00047,
+  "solana_authorization_fee_USD": 0.0419193,
+  "solana_refundable_proof_reserve_SOL": 0.2146554,
+  "solana_refundable_proof_reserve_USD": 19.145115126,
+  "solana_mainnet_quote_at_utc": "2026-11-08T12:53:00.344724+00:00",
+  "solana_local_vm_refunded_reserve_lamports": 294094800,
+  "solana_priority_fee_lamports": 0,
+  "asset_quote_utc": "2026-11-08T09:09:14.614043+00:00",
+  "base_execution_USD_per_million_gas": 0.013414800000000001,
+  "base_minimum_block_capacity_for_job": 3,
+  "fee_scope": "One complete successful native withdrawal on each chain. Base includes execution, L1 data and its configured operator charge. Solana reserve is returned in full. Setup, rejected tests and a commercial relayer service price are separate."
+}

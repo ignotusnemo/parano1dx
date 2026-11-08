@@ -1,0 +1,6 @@
+*.bin binary
+*.so binary
+*.pdf binary
+assets/*.svg linguist-generated whitespace=-blank-at-eol
+experiments/native-vault/results/** linguist-generated
+experiments/native-vault/vendor/** linguist-vendored -whitespace

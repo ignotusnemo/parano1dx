@@ -1,0 +1,28 @@
+{
+  "network": "Base Sepolia",
+  "chain_id": 84532,
+  "run": "spare-public-normal-1",
+  "payer": "0xdC3A64271FBD2Db3e98B620D32d427C0816b8881",
+  "recipient": "0xe1240D2D1f5ab5459d66E6c4F4b3DF9c3ebF7168",
+  "verifier": {
+    "address": "0xB6fa60E20Af13B7fF8aF7414306ed389326f6934",
+    "code_bytes": 19169,
+    "code_keccak256": "0xc6cf90ae8888fb75d0eaf19987fccdaf60d614a69090e503932d39b182dce0ca",
+    "deployment_hash": "0x009e394777a37bdfb110ad85d2c435c5c0a6d8d4bde38389f2baf709c2501ba2"
+  },
+  "factory": {
+    "address": "0x3415F1fe6DEDAD3ebDfF2A7c062Ee903990C65D6",
+    "code_keccak256": "0x0a7e82bec14abeb5378e33d17b565ea07ac6c56dc3c5e438d02db815c022431a",
+    "deployment_hash": "0x95891df40d3da302b498c70497da3cd4afd1fa6f0b86bb686f21828496bb57c9"
+  },
+  "vault": "0x5B7Ecc0C17d6E8c1E6644784E1416Ec282DE74d1",
+  "authority_commitment": "0x51be61f3ef84c3cc8b1ad432a5dea2d7fcee073f963e5c9f97b051468bafc5cc",
+  "parameters": "0x3956121c346ac86bfe4fbf2ef85218c32aaa4d0928d3ddcb16a0699405ae735d",
+  "network_domain": "f2173002c42f3040f0a5904cd3b798078080acce3ee89dbe2475d7af96b919c3",
+  "request_id": "0xb6efea2ef0e3b000d4744bbbe4b52138b5740ff8b2354c74e39b4be9c990bd35",
+  "expiry_block": "56113549",
+  "withdrawal_wei": "2500000000000",
+  "deposit_wei": "10000000000000",
+  "rpc_url": "https://sepolia.base.org",
+  "started_at_utc": "2026-11-08T12:56:00.555Z"
+}

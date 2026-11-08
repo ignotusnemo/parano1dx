@@ -1,0 +1,17 @@
+[package]
+name = "p3-air"
+description = "Plonky3 AIR interfaces with deterministic symbolic caches for Solana."
+version = "0.8.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Plonky3/Plonky3"
+
+[features]
+testing = []
+
+[dependencies]
+p3-field = { git = "https://github.com/Plonky3/Plonky3", rev = "0d803737b681774186cd283b1fd2d8e493655c82" }
+p3-matrix = { git = "https://github.com/Plonky3/Plonky3", rev = "0d803737b681774186cd283b1fd2d8e493655c82" }
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
+thiserror = { version = "2.0", default-features = false }
+tracing = { version = "0.1.44", default-features = false, features = ["attributes"] }

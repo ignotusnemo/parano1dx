@@ -1,0 +1,73 @@
+{
+  "solana_devnet": [
+    {
+      "case": "spare-v1-eager-normal-1",
+      "label": "Normal v1 delivery",
+      "network": "Solana Devnet",
+      "transaction_version": "v1",
+      "upload_chunk_bytes": 3584,
+      "confirmed_s": 18.082503341982374,
+      "observed_finality_s": 21.633847508986946,
+      "proof_preparation_s": 0.27795596097712405,
+      "unique_authorization_transactions": 88,
+      "rebroadcast_submissions": 0,
+      "network_fee_lamports": 445000,
+      "refunded_reserve_lamports": 210753960,
+      "maximum_verification_CU": 1140137,
+      "withdrawal_signature": "3xuJsArGD9oPD815KqNeMyedT57ZVUYQBbkdNzqoDMBsYy9w4vLkotsdKA93RxLYEeczuPqqHpKbhViiJcoTQdb9",
+      "close_signature": "2v3VCVutCFMU5Dd8fkPQ1Kmyoz5uu6FnURQz8QmALL8Zhr2GoLVJQxJx8wmpoJdxd4EpSSjc3JeANWen87eSaEw",
+      "automated_receipt_cross_checks_passed": true,
+      "fault_injection_enabled": false,
+      "receipt": "spare-v1-eager-normal-1/live-result.json",
+      "independent_audit": "spare-v1-eager-normal-1/independent-audit.json",
+      "withdrawal_explorer_url": "https://explorer.solana.com/tx/3xuJsArGD9oPD815KqNeMyedT57ZVUYQBbkdNzqoDMBsYy9w4vLkotsdKA93RxLYEeczuPqqHpKbhViiJcoTQdb9?cluster=devnet"
+    },
+    {
+      "case": "spare-v1-eager-faults-1",
+      "label": "Dropped packet and reordered v1 delivery",
+      "network": "Solana Devnet",
+      "transaction_version": "v1",
+      "upload_chunk_bytes": 3584,
+      "confirmed_s": 22.335705817997223,
+      "observed_finality_s": 26.036355541000376,
+      "proof_preparation_s": 0.2902180710225366,
+      "unique_authorization_transactions": 91,
+      "rebroadcast_submissions": 0,
+      "network_fee_lamports": 460000,
+      "refunded_reserve_lamports": 225993960,
+      "maximum_verification_CU": 1137424,
+      "withdrawal_signature": "5cFg8MmcB5gCoHyfappoBjoPrwdskauV6J6BhgyW7ntsibmHwe72zyL4UYqoRVDTyNSQdmveTuZj1JzXvFMzuMcV",
+      "close_signature": "3EveJk9ptWXqbJGFgmyBo4cW2DRhkki2n8UXKoMD6LaaJsB6UtByLqr2W2yAYKPhXpCrfuQuYiVvz3Wps5DJnrVr",
+      "automated_receipt_cross_checks_passed": true,
+      "fault_injection_enabled": true,
+      "receipt": "spare-v1-eager-faults-1/live-result.json",
+      "independent_audit": "spare-v1-eager-faults-1/independent-audit.json",
+      "withdrawal_explorer_url": "https://explorer.solana.com/tx/5cFg8MmcB5gCoHyfappoBjoPrwdskauV6J6BhgyW7ntsibmHwe72zyL4UYqoRVDTyNSQdmveTuZj1JzXvFMzuMcV?cluster=devnet"
+    }
+  ],
+  "real_assets_used": false,
+  "base_sepolia": {
+    "chain_id": 84532,
+    "confirmed_s": 14.455491701,
+    "authorization_transactions": 10,
+    "authorization_gas": 103886415,
+    "authorization_fee_wei": "623630745261972",
+    "execution_fee_wei": "623630744345448",
+    "l1_data_fee_wei": "916524",
+    "operator_fee_wei": "0",
+    "wallet_proving_ms": 111.463983,
+    "withdrawal_hash": "0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+    "withdrawal_explorer_url": "https://sepolia.basescan.org/tx/0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+    "timing_scope": "Proof preparation, expansion, read-only adversarial checks and ten sequential L2 receipt observations. Shared deployment and deposit precede the timer.",
+    "fee_scope": "Actual Base Sepolia receipt fees in test ETH. Mainnet pricing is a separate read-only quote.",
+    "finality_observation": {
+      "chain_id": 84532,
+      "withdrawal_hash": "0x5c07ba6b176572e7033be530945a7c802c01ed7f297ff651e5ff3b3b6ef83d52",
+      "confirmed_s": 14.455491701,
+      "safe_observed_s": 178.852059634,
+      "finalized_observed_s": 1171.6858655929998,
+      "observed_at_utc": "2026-11-08T13:15:32.241Z",
+      "scope": "Separate L1 publication and finality observations. Null means the level has not yet been observed."
+    }
+  }
+}

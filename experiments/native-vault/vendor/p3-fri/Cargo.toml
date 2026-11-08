@@ -1,0 +1,25 @@
+[package]
+name="p3-fri"
+version="0.8.0"
+edition="2024"
+license="MIT OR Apache-2.0"
+repository="https://github.com/Plonky3/Plonky3"
+[features]
+parallel=["p3-maybe-rayon/parallel"]
+[dependencies]
+p3-challenger={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-commit={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-dft={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-field={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-matrix={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-maybe-rayon={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-security={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-util={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+itertools={version="0.15.0",default-features=false,features=["use_alloc"]}
+rand={version="0.10",default-features=false,features=["std_rng"]}
+serde={version="1.0",default-features=false,features=["derive","alloc"]}
+spin="0.12.0"
+thiserror={version="2.0",default-features=false}
+tracing={version="0.1.44",default-features=false,features=["attributes"]}
+[lints.rust]
+unexpected_cfgs={level="allow",check-cfg=['cfg(target_os, values("solana"))']}

@@ -1,0 +1,16 @@
+{
+  "altered_query_rejected": true,
+  "batch_sizes_checked": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "cache_bytes": 9792,
+  "changed_request_rejected": true,
+  "host_check_ms_including_mutations": 64.210251,
+  "last_query_corruption_rejected": true,
+  "query_count": 64,
+  "stream_conjunction_verified": true
+}

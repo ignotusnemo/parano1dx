@@ -1,0 +1,33 @@
+{
+  "name": "parano1dx-native-vault-local-tools",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ethereumjs/block": "10.0.0",
+    "@ethereumjs/common": "10.0.0",
+    "@ethereumjs/evm": "10.0.0",
+    "@ethereumjs/statemanager": "10.0.0",
+    "@ethereumjs/tx": "10.0.0",
+    "@ethereumjs/util": "10.0.0",
+    "@ethereumjs/vm": "10.0.0",
+    "ethers": "6.16.0",
+    "solc": "0.8.30",
+    "@ethereumjs/binarytree": "10.0.0",
+    "@ethereumjs/mpt": "10.0.0",
+    "@ethereumjs/rlp": "10.0.0",
+    "@ethereumjs/verkle": "10.0.0"
+  },
+  "overrides": {
+    "@ethereumjs/binarytree": "10.0.0",
+    "@ethereumjs/block": "10.0.0",
+    "@ethereumjs/common": "10.0.0",
+    "@ethereumjs/evm": "10.0.0",
+    "@ethereumjs/mpt": "10.0.0",
+    "@ethereumjs/rlp": "10.0.0",
+    "@ethereumjs/statemanager": "10.0.0",
+    "@ethereumjs/tx": "10.0.0",
+    "@ethereumjs/util": "10.0.0",
+    "@ethereumjs/verkle": "10.0.0",
+    "@ethereumjs/vm": "10.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+[package]
+name="p3-keccak"
+version="0.8.0"
+edition="2024"
+license="MIT OR Apache-2.0"
+repository="https://github.com/Plonky3/Plonky3"
+[dependencies]
+p3-symmetric={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+p3-util={git="https://github.com/Plonky3/Plonky3",rev="0d803737b681774186cd283b1fd2d8e493655c82"}
+tiny-keccak={version="2.0.2",features=["keccak","sha3"]}
+[target.'cfg(target_arch="x86_64")'.dependencies]
+cpufeatures="0.3.0"
+[lints.rust]
+unexpected_cfgs={level="allow",check-cfg=['cfg(target_os, values("solana"))']}

@@ -1,0 +1,41 @@
+{
+  "observed_at_utc": "2026-11-08T09:50:37.674330+00:00",
+  "broadcast_transactions": 0,
+  "scope": "Fresh HTTPS RPC round trips from the recorded research host and recent chain cadence. Withdrawal inclusion and finality require live transaction measurements.",
+  "networks": {
+    "Base": {
+      "endpoint": "https://base-rpc.publicnode.com",
+      "fresh_https_request_ms": [
+        688.8739760033786,
+        8501.911446990562,
+        460.9210840135347,
+        605.034844003967,
+        570.7097770064138
+      ],
+      "median_ms": 605.034844003967,
+      "block_number": 54705306,
+      "block_hash": "0x9d9ca7d78fab4f7aad87b748002ab48a2b9c71bac12bcabbb12426f21ec80ee8",
+      "block_gas_limit": 40000000,
+      "observed_mean_block_interval_ms": 200
+    },
+    "Solana": {
+      "endpoint": "https://solana-rpc.publicnode.com",
+      "fresh_https_request_ms": [
+        788.9519760065014,
+        525.5908330000238,
+        568.8417900091736,
+        625.3281190001871,
+        602.6662109943572
+      ],
+      "median_ms": 602.6662109943572,
+      "performance_sample": {
+        "numNonVoteTransactions": 58137,
+        "numSlots": 278,
+        "numTransactions": 58137,
+        "samplePeriodSecs": 60,
+        "slot": 466870661
+      },
+      "observed_mean_slot_interval_ms": 215.8273381294964
+    }
+  }
+}
