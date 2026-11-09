@@ -10,7 +10,8 @@ https://github.com/Plonky3/Plonky3
 
 The vendor directory retains the original Apache-2.0 and MIT licenses of
 p3-air, p3-uni-stark, p3-fri and p3-keccak. The local copies adapt transcript
-binding, compiled verification, streaming checkpoints and SBF execution.
+binding, transition stride, hiding-capacity checks, compiled verification,
+streaming checkpoints and SBF execution.
 The talc allocator retains its own license and SBF integration changes.
 
 Public experiment artifacts include transaction receipts, signed wires,

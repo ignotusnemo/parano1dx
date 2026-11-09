@@ -491,9 +491,8 @@ where
     let periodic_values: Vec<SC::Challenge> =
         init_trace_domain.evaluate_periodic_columns_at(periodic_columns, zeta);
 
-    let zeta_next = init_trace_domain
-        .next_point(zeta)
-        .ok_or(VerificationError::NextPointUnavailable)?;
+    let mut zeta_next=zeta;
+    for _ in 0..air.next_row_stride() {zeta_next=init_trace_domain.next_point(zeta_next).ok_or(VerificationError::NextPointUnavailable)?;}
 
     // A randomization commitment is present exactly when the PCS is zero-knowledge.
     // The caller has already checked that, so this branch only unpacks it.

@@ -1,0 +1,97 @@
+{
+  "audited_at_utc": "2026-11-09T08:41:27.114Z",
+  "rpc_endpoint": "https://base-sepolia-rpc.publicnode.com",
+  "chain_id": 84532,
+  "source_receipt_sha256": "0eacb2f8a82e3588a5b061ad3995ee95377bc2ac0be4ba2b4b22f7a460061907",
+  "signed_transactions_checked": 11,
+  "canonical_receipts_verified": true,
+  "code_hashes_verified": true,
+  "all_64_queries_present": true,
+  "typed_request_verified": true,
+  "native_request_context_verified": true,
+  "request_context": "0x267f90d994faa48291da4d58ee8946f0e06d07f6559f99219cf8f6a2399f5323",
+  "payout_balances_verified": true,
+  "nonce_consumed_once": true,
+  "fees_reconciled": true,
+  "withdrawal_hash": "0xae8ed556aedffc67ec293b7abf85b0fb79ac6ecd99f6041493c0c39598d1fc30",
+  "receipts": [
+    {
+      "hash": "0x7c465a738105cfce236e07e660f6945d46b6ce5690f4f4a9985d5e019c1cf5db",
+      "block_number": 56456194,
+      "block_hash": "0x7630d165c022c16407319c011a24ddb368f06a62fcd97f5c53060fc2b0acc1db",
+      "gas_used": "3876459",
+      "total_fee_wei": "23258754009179"
+    },
+    {
+      "hash": "0x910e804e893770ef331c33226c309b906f173b57a2afa90a4111f291864f4482",
+      "block_number": 56456199,
+      "block_hash": "0xd13f7c7a25de052f6cc6df9ae0bfc09a99fe0da42bcc478cc09f3ef1ba9a29a8",
+      "gas_used": "1263163",
+      "total_fee_wei": "7578978002973"
+    },
+    {
+      "hash": "0x2a7dee74be62872194884e37399feef8e8222a4a079dcc453302d20d57433f20",
+      "block_number": 56456205,
+      "block_hash": "0xbe5948227edc4f756df02bb20188089becc7d55e490a60bb22ddbbf756579ec4",
+      "gas_used": "939766",
+      "total_fee_wei": "5638596000094"
+    },
+    {
+      "hash": "0x783cb18160dccf81f16f9adcba4db7ff555a47c8f72f0cffef016de4aa652d7e",
+      "block_number": 56456211,
+      "block_hash": "0x668a742e39bca40683581fca9e4ab869fc1b1f30f9803f744e028b2f6ff2764d",
+      "gas_used": "21062",
+      "total_fee_wei": "126372000094"
+    },
+    {
+      "hash": "0xeed1ac5af145be682bfa24bb29b1e9dc410a115e992bd16c23f8d51376cd4544",
+      "block_number": 56456225,
+      "block_hash": "0xbaa4f64cfd7db3492cafdb9b26e534eff7169178a084b20951d5ae3afac146ed",
+      "gas_used": "9724248",
+      "total_fee_wei": "58345488007708"
+    },
+    {
+      "hash": "0xbbc0ff8dfba07201a3f4a241fb9f8ca60d53be1fc62190c1615d6fb9fd98a1a4",
+      "block_number": 56456246,
+      "block_hash": "0xd39545adc1f4a024a88af1a37dcd29809671cc58c8f00c9225588a17e93d4621",
+      "gas_used": "11500803",
+      "total_fee_wei": "69004818090941"
+    },
+    {
+      "hash": "0x75a27cf1f613884e9a9ebaedbf57b062f859160d5ebf77079b5392228d90802a",
+      "block_number": 56456256,
+      "block_hash": "0xdef1c9965f404551a9048ad4dc8941c0dbe8947afdb3bb7a7bde2eb6606359b4",
+      "gas_used": "11506367",
+      "total_fee_wei": "69082950352286"
+    },
+    {
+      "hash": "0x724832846b195da2a006a019729bf8e62569a72461c5347f7ba60fd402601846",
+      "block_number": 56456268,
+      "block_hash": "0xd3c2238d319645e057d7d86622508aaba61ee71e20bcec5f67574d3e9ab1e14f",
+      "gas_used": "11504865",
+      "total_fee_wei": "69029190091004"
+    },
+    {
+      "hash": "0x868d1089b83ad425b416e90a48d9d9e4245a7dd831a0d03a01c8e4f162935117",
+      "block_number": 56456278,
+      "block_hash": "0xce9e9dff6ef9c323b0d857094b0960e9d3bc93b3ed9762931df8b40b3387c599",
+      "gas_used": "11506091",
+      "total_fee_wei": "69068682603129"
+    },
+    {
+      "hash": "0x015d8a242d8a8e8884417253cc50c81dab4ba258a69f0e5ce87ec9c586cb69a3",
+      "block_number": 56456288,
+      "block_hash": "0x73718dab9831e26967c3ccbd56fac5cb2a4ffcd9943aa3a56ae29ed782cb80b2",
+      "gas_used": "11504870",
+      "total_fee_wei": "69064482517543"
+    },
+    {
+      "hash": "0xae8ed556aedffc67ec293b7abf85b0fb79ac6ecd99f6041493c0c39598d1fc30",
+      "block_number": 56456297,
+      "block_hash": "0x1efda4c969171d88220eb963a20c1d3b7ff90f08776b3898946d01b632bffeb4",
+      "gas_used": "4004125",
+      "total_fee_wei": "24076715574907"
+    }
+  ],
+  "scope": "Read-only automated cross-check through an RPC independent of the submitting endpoint."
+}

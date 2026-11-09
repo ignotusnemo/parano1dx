@@ -1,0 +1,170 @@
+Atomic native responses and parallel quantum extraction
+9 November 2026
+
+The native proof uses one 512-bit response for every extension challenge
+and one response for the complete 64-position subset and its grinding
+predicate. Its resource bound applies to classical authorization requests
+and coherent access to both hash components.
+
+1. Native response grammar
+
+Write H=SHA256||Keccak256 and N=2^512. Each observed message is appended
+to the complete previous digest. Field sampling consumes all 64 bytes.
+It reads their reverse byte order as a little-endian integer, reduces it
+modulo p^8 and returns its eight radix-p digits. Its largest point mass
+is ceil(N/p^8)/N. A field bad set of cardinality b consequently has
+probability at most b*ceil(N/p^8)/N.
+
+The query seal hashes the final polynomial and its full predecessor.
+The candidate input is the seal digest followed by one reduced field
+word. Its output is one integer y in [0,N). Accepting a witness requires
+y mod 4096=0. The subset rank is floor(y/4096) mod C(4096,64). Thus the
+source density is exactly the envelope in source-restoration.txt.
+All trials are ordinary charged calls. A transcript with an exceptional
+out-of-domain challenge is charged at the corresponding field flag.
+
+Merkle inputs have fourteen-byte leaf and node tags. Their lengths are
+two modulo four. The initial transcript input has length three modulo
+four. Later inputs have length zero modulo four. A native field or query
+response therefore has one typed input. The 40-byte capacity-seed input
+is fixed separately. The initial context contains the request's second
+32-byte digest. The field public values contain its first digest.
+
+2. Rooted reconstruction and source flags
+
+A collision-free database gives every full digest a unique recorded
+preimage. Starting at a typed response input, follow complete predecessor
+digests to recover its public instance and earlier responses. Expand the
+recorded source roots to their fixed heights. Missing source positions
+are zero-completed. The authenticated preprocessing word is public.
+This gives the exact rooted prefix used by the source extractor.
+
+A field flag is its finite exceptional response set. A query flag is a
+passing grind and a subset contained in the prefix's good-position set
+when source extraction fails. Prefix malformedness and missing final
+verification pairs are covered by the hash recording term. Each
+well-formed candidate has the conditional density supplied by the source
+lemma, uniformly for every fixed earlier database and source word.
+
+The bad property is the presence of at least one such flag for an
+identifier outside the requested set J. An identifier is the full pair
+of canonical request digests. It enters J before an authorization is
+constructed. A terminal fresh accepted proof outside the bad property
+provides an authority preimage by the source extraction lemma.
+
+3. Global protection of a database prefix
+
+For a parallel query tuple x, delete its addressed rows and fix the
+remaining database. Collect all recorded digest labels and every typed
+hash pointer in the remaining keys and in x. Add the fixed public seed
+label and self-return exclusions. At most beta=8T+32 labels are needed.
+This set is fixed throughout that tuple's update.
+
+Replace the uniform compression reflection by the reflection using only
+allowed labels and fixing each forbidden label. If a fraction f is
+forbidden, the uniform vectors have inner product sqrt(1-f). Their
+reflection difference is at most 2sqrt(f). The corresponding lookup
+sandwiches differ by at most 4sqrt(f). Applying the scalar telescoping
+identity to all physical calls gives global state error at most
+
+    E_protect(T)=4T sqrt((8T+32)/N).
+
+This comparison is made once for the whole experiment. It is added to
+the terminal success amplitude after the transition bound.
+
+Every already rooted dependency has an output in the forbidden set.
+Its compressed row is fixed, including against deletion to the blank
+symbol. A new row cannot complete an old missing dependency, since its
+new output would have to equal a forbidden pointer. Thus each earlier
+rooted prefix is invariant. For one parallel tuple, decompose into the
+orthogonal fibers of the fixed rooted labels. On each fiber a new flag
+can arise only at one of its addressed response rows. Its bad set depends
+only on that row's new output and the fixed prefix.
+
+These are the one-local recognizing sets of CFHL21, Definition 5.14.
+The uniform distribution on allowed labels increases any density by at
+most 1/(1-beta/N). The Frobenius-norm proof of CFHL21, Theorem 5.17,
+applied to the restricted compression reflection therefore gives
+
+    transition_s <= sqrt(10 sum_j k_sj kappa_j/(1-beta/N)).
+
+The direct-sum fibers do not multiply this bound by their number. The
+query response is one row, so its entire subset has the joint density.
+
+4. Adaptive constructors and retained input exchanges
+
+The witness-free simulator of simulation.txt uses a classical input
+permutation whose endpoints are private leaf inputs. It fixes every
+transcript, internal node and public preprocessing input. A constructor's
+own identifier is already in J. Its transcript calls do not create a
+fresh-identifier source flag.
+
+A previous fresh prefix can be changed by a retained exchange only if it
+uses an old endpoint or a new constructor label. For an old database of
+at most T rows, a fresh actual endpoint has membership probability at
+most T/p^20. A dummy endpoint conditioned on its digest has membership
+probability at most 2TN/p^36. A fresh constructor digest hits one of the
+old pointer labels with probability at most 2(T+v)/N. These bounds hold
+on arbitrary coherent old states by conditioning on each deleted-row
+fiber and applying the projector norm bound 2sqrt(probability).
+
+There are at most v endpoints or labels in one attempt. Summing the two
+comparison directions, raw guard projections and S adaptive attempts is
+covered, for T>=v, by the following state-distance envelope:
+
+    E_updates(S,T)=128 S(T+v) sqrt(v/p^20)
+        +128 S v sqrt((T+v)/N)
+        +128 S v sqrt(2(T+v)N/p^36).
+
+The first term dominates the summed actual-endpoint bound
+8Sv sqrt(T/p^20), since T>=v. The last two terms cover dummy endpoints
+and all new-label tests directly. On the complementary fibers the
+input exchanges preserve all previous fresh prefixes exactly. Pruning
+and the algebraic-view hybrid are charged separately in eps_sim.
+The comparison uses raw tapes and aborts the complete experiment on a
+failed retained guard.
+
+5. Recording and terminal extraction
+
+Count every setup, constructor, projection and final recheck in T.
+Ordinary compressed-oracle collision search has success amplitude at
+most 2e(T+1)sqrt(10(T+1)/N)+sqrt(2/N), by CFHL21, Theorem 5.29.
+Input-label exchanges preserve equality of recorded outputs. Constructor
+calls are ordinary physical calls. The displayed expression therefore
+continues to hold between their input-label permutations. Together with
+at most 65536 terminal pair checks and fixed-row exclusions, use
+
+    E_record(T)=32 sqrt((T+1)^3/N)+256/sqrt(N).
+
+Measure the compressed database once at the end. Apply the final input
+permutation, enumerate its rooted prefixes and run the source extractor.
+Validate each returned authority preimage. The extractor has the original
+quantum execution followed by deterministic classical list decoding.
+Its complete classical decoding cost is part of the preimage adversary
+B. It makes no additional quantum queries or rewinds.
+
+6. Resource theorem
+
+For batch s, let k_sj count its responses of type j. A_s is its logical
+gate count and delta_s its logical depth. The declared batch response
+price c_j requires sum_j k_sj*c_j <= A_s*delta_s. Let sum A_s<=G and
+sum delta_s<=D. Cauchy-Schwarz gives
+
+    sum_s sqrt(sum_j k_sj*kappa_j)
+      <= sqrt(GD max_j(kappa_j/c_j)).
+
+Put R=GD max_j(kappa_j/c_j), beta=8T+32 and beta<N. The native
+same-run authorization reduction is
+
+    Pr[ReleaseForge] <= Adv_pre(B)+eps_der+eps_rng+eps_sim(S,T)
+       +(sqrt(10R/(1-beta/N))+E_protect(T)
+          +E_updates(S,T)+E_record(T))^2.
+
+The bound is capped at one. Projection from either hash component is
+simulated by returning the complete hybrid response. Its price premise
+uses the cheaper component interface. Classical attacks use the same
+source recognizing sets with the ordinary union bound sum k_sj*kappa_j.
+
+Reference: Chung, Fehr, Huang and Liao, On the Compressed-Oracle
+Technique, and Post-Quantum Security of Proofs of Sequential Work,
+https://arxiv.org/abs/2010.11658, Theorems 5.7, 5.17 and 5.29.

@@ -1,0 +1,18 @@
+{
+  "base_prime": 2130706433,
+  "width": 24,
+  "sbox_exponent": 3,
+  "classical_round_selection_target_bits": 256,
+  "full_rounds": 8,
+  "partial_rounds": 26,
+  "active_rows_including_initial_layer": 35,
+  "all_six_round_conditions_pass": true,
+  "standard_margin_full_rounds": 2,
+  "standard_margin_partial_percent": "7.5",
+  "reference": "https://github.com/HorizenLabs/poseidon2/blob/main/poseidon2_rust_params.sage",
+  "reference_128_constants_sha256": "c05b0365a46cb22f12fddb433fd8f483ed16e8350ef886cac6e7b409107c8e98",
+  "reference_all_215_constants_match_pinned_backend": true,
+  "constants_sha256": "0209f8e527161809516e257a269bbeab03e9b016eeca455f09e346b4294dc427",
+  "primitive_condition": "Preimage hardness of the fixed capacity slice and truncated output map.",
+  "scope": "Round-selection inequalities and reproducible constants for the selected classical target."
+}

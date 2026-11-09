@@ -1,218 +1,102 @@
-Parano1dX external-vault authorization profile
+Native-asset authorization protocol
+9 November 2026
 
-The local implementations release native ETH and SOL only after the
-complete verification job succeeds. The final transition consumes the
-vault nonce and transfers value atomically. The implementation has no
-administrative withdrawal path. A relay key pays for transport.
+The selected profile authorizes a canonical request by knowledge of a
+Parano1d-derived authority secret. EVM and Solana vaults protect their
+own native assets and verify the proof before releasing value.
 
-Authority and recovery
+Authority
 
-The wallet root is a high-entropy 32-byte Parano1d secret S. HKDF-SHA-256
-uses salt "Parano1dX/root-derivation/v1". Its info is AUTH_DOMAIN || N ||
-LE64(index), where N is the fixed 32-byte network identity. Its 56 output
-bytes form fourteen little-endian u32 words reduced into KoalaBear.
+HKDF-SHA256 separates the 256-bit Parano1d secret by network and account
+index. Fourteen field elements fill the authority-secret positions of a
+width-24 Poseidon2 permutation. Ten capacity elements are fixed by its
+public authority-domain hash. The permutation uses eight full rounds,
+26 partial rounds and a cubic S-box. Its first twelve outputs identify
+the authority. The vault stores their 32-byte domain-separated commitment.
 
-AUTH_DOMAIN is "Parano1dX/v1/authority/koalabear24". The authority input
-contains fourteen secret elements and ten public capacity elements. The
-capacity comes from the hybrid hash of AUTH_DOMAIN, split into u32 words
-and mapped into the field. Poseidon2 has width 24, eight full rounds and
-23 partial rounds. The public commitment C is SHA-256(AUTH_DOMAIN ||
-LE32(output[0]) || ... || LE32(output[11])). Outputs use canonical field
-encodings. This is a dedicated external-vault authority configuration.
+Canonical request
 
-The EVM fixture's N is SHA-256("Parano1dX/network/EVM" || BE256(chain_id)).
-The Solana fixture pins its local deployment domain in the program. A
-production manifest must authenticate the cluster identity and deployment.
-The fixtures use distinct branches from the same public research root.
+Both SHA256 and Keccak256 digest the same request encoding. It includes
+the network, deployed vault or program, parameter manifest, nonce,
+recipient, amount and expiry. Sixteen u16 limbs of the first digest enter
+the AIR. The second digest enters the challenger's initial state.
+The host recomputes both components from the transfer being requested.
 
-The Solana PDA uses seeds "Parano1dX-vault", C and its canonical bump.
-Its 80 bytes retain the magic, C, nonce and parameter identity. The EVM
-factory uses CREATE2 with salt keccak256(abi.encode(C,index,parameters)).
-Its initialization code fixes C, the parameters and the shared verifier.
-Recovery uses the root, index and authenticated deployment manifest.
-Deposits follow authenticated deployment of the vault.
+Field and proof geometry
 
-Proof configuration
+Base field:                   p=2130706433.
+Extension:                    degree 8, X^8-3.
+Logical trace:                128 rows, 40 columns.
+Execution and rotation:       odd rows, stride 2, order-64 rotation.
+Private state-mask dimension: 192 per column.
+Preprocessing:                28 columns.
+Committed degree bound:       256.
+Codeword domain:              4096 positions.
+FRI checks:                   64 distinct positions.
+FRI arities:                  4,4,4,4.
+Field salts:                  20 per matrix row.
+Query grinding:               12 bits.
+Hash:                         SHA256||Keccak256, exact 64-byte roots.
 
-Base field:       2130706433 = 2^31 - 2^24 + 1, KoalaBear.
-Challenge field:  Degree eight, polynomial X^8 - 3.
-Main trace:       256 rows, 40 columns.
-Preprocessing:    27 columns, deterministic public preprocessing.
-Public values:    Twelve authority outputs and sixteen request-ID limbs.
-Proof system:     Plonky3 uni-STARK with HidingFriPcs and randomization.
-FRI:              64 queries, blowup eight, final polynomial length one.
-Folding arities:  4, 4, 4, 4, 2.
-Random codewords: Eight.
-Merkle salt:      Ten base-field elements per matrix row.
-Grinding:         Zero bits at all configured sites.
-Hash:             SHA-256(message) || Keccak-256(message), 64 bytes.
-Fresh coins:      A new 256-bit operating-system seed for every proof.
+The 64 explicit free logical rows and 128 hiding-PCS rows supply the
+state masks. Capacity is constrained at logical row one. The authority
+output is constrained at row 127. Main transport needs at most 144
+coordinates. Every quotient mask needs at most 72 of its 128 coordinates.
 
-Leaf and compression domains are "Parano1dX/leaf" and
-"Parano1dX/node". The pinned backend's typed domain separators and field
-representation are shared by Rust and Solidity. The public preprocessing
-seed is independent of the fresh private proof seed. Source dependencies
-and their exact revision are fixed in Cargo.toml and Cargo.lock.
+Transcript
 
-The AIR constrains the domain-capacity input, every permutation transition,
-the authority output and the request-ID limbs. The outer check authenticates
-the folded constraints against the quotient opening. The opening argument
-checks four input commitment batches, five FRI commitments and all 64
-query chains. The native strict verifier and compiled AIR verifier both
-accept each generated fixture.
+Each extension challenge consumes a complete hybrid response and takes
+its eight radix-p digits. The seven field challenges are AIR alpha,
+out-of-domain z, PCS gamma and four FRI betas. Every next hash input
+retains the complete preceding digest.
 
-Request binding
+After the final polynomial, one seal digest binds the query phase.
+A reduced field witness is appended to that digest. The next 512-bit
+response has twelve zero low bits. Its remaining 500 bits are reduced
+modulo C(4096,64) and unranked as one distinct 64-element subset.
 
-The Solana identifier is SHA-256 over the SOL withdrawal domain, the fixed
-network identity, program, vault, parameter identity, LE64(nonce), recipient,
-LE64(amount), LE64(expiry), a zero fee recipient and a zero fee amount.
+The source acceptance bound uses at most 896 good source positions.
+Its exact native query density is
+ceil(2^500/C(4096,64))*C(896,64)/2^512. The finite field numerator and
+source decoder are in research/security/rs-certificate.json.
 
-The EVM identifier is SHA-256 over abi.encodePacked of the EVM withdrawal
-domain, uint256 chain ID, vault address, parameter identity, uint256 nonce,
-recipient address, uint256 amount and uint256 expiry. The selected policy
-fixes vault-funded relay reimbursement at zero. The relay pays its own
-transaction fee. The vault reconstructs the identifier from actual call
-arguments and its stored nonce.
+EVM acceptance
 
-Solana streaming verification
+The installed vault fixes its authority, manifest and verifier. Its
+canonical request includes the current nonce. A job is indexed by the
+SHA256 and Keccak256 pair on the complete base and request. Initialization
+checks the AIR and prepares a cache authenticated by both components.
+Consecutive batches contain at most twelve ordinary query witnesses.
+After all 64 pass, the vault consumes the nonce and transfers value.
+The complete selected lifecycle takes seven transactions.
 
-The temporary program-owned account holds a 256-byte header, 9,792-byte
-transcript cache, the previous fully verified 7,212-byte query and a reusable
-witness window. Its capacity is the maximum encoded frame length for the
-job. The selected group size is between one and five queries. Five-query
-groups reduce the verification sequence to fourteen windows. The current rent quote is recorded with each measured account size. Closing the
-account refunds its balance in full.
+Solana acceptance
 
-The uploader authenticates fixed 3,584-byte chunks in any arrival order.
-The last chunk has the exact remaining length. A protected bitmap records
-accepted chunks. Each packet binds the frame, total length and generation.
-Identical duplicates are idempotent. Conflicting duplicates and stale
-generations reject. The initial window carries 267 extension evaluations, eight proof
-roots, the final polynomial, twelve authority outputs and three inverse
-hints. The program validates field encodings, checks the pinned checksum,
-reconstructs the actual request and verifies the outer AIR equation. It
-derives the transcript, powers and common reductions into protected data.
-Subsequent uploads can modify only the witness window.
+The native vault is a PDA derived from the program and authority
+commitment. A program-owned temporary account retains the canonical
+request pair, base pair, uploader, query counter, rank counter and cache.
+Uploads use generation-labelled, idempotent windows. The program rejects
+conflicting duplicates and skips. A reset preserves accepted progress.
 
-The verifier sorts the multiset of 64 transcript query indices. Every
-index and its multiplicity are preserved. A query uses ordinary paths to
-four input roots and five FRI roots, opening reductions, all five folds
-and the final polynomial. The fixed expanded query has 7,212 bytes.
-Its lossless transport uses a twelve-byte bitmap for nine leaves, 79
-authentication nodes and two inverse hints. A set bit supplies a literal.
-A clear bit copies that component from the previous accepted query.
-Unused bitmap bits, exact lengths and complete input consumption are
-checked. The expanded witness then passes the ordinary verifier.
+The base is 9332 bytes. It includes 268 extension evaluations, seven
+proof roots, the final polynomial, twelve authority outputs, three
+inverse hints, 64 u16 position values and the grinding witness.
+The derived cache is 9858 bytes. An expanded query is 7520 bytes.
 
-Each query group encodes its count and exact delta lengths. The verifier
-checks every expanded query in the group before updating the retained
-witness and advancing the counter. A failure in any query preserves the
-cache, retained witness and accepted prefix. Resetting a damaged upload
-increments its generation and clears only the current window. Every step
-checks the actual vault, request, nonce, parameters and expiry. Query 64
-consumes the nonce and releases SOL atomically. Every v1 upload transaction also invokes the conditional completion check.
-An incomplete bitmap returns without advancing the verification counter.
-The transaction that completes the bitmap checks the complete frame and
-commits its progress atomically. All packets for one window are delivered
-as one QUIC batch. A confirmed account update enables the next window.
+Queries use eight leaves and 76 full sibling digests. A twelve-byte
+bitmap selects literal components. At a divergence, the omitted sibling
+is derived from the previous verified leaf and its preceding path.
+Every reconstructed query is checked by the ordinary verifier.
 
-The strict native verifier validates each original proof. The public
-export reconstructs and checks all nine Merkle roots and transcript
-challenges. The native streaming verifier checks every expanded query.
-SBF uses the same field arithmetic with native SHA-256 and Keccak syscalls.
-The v1 message carries explicit inline compute, heap and loaded-account
-data limits. Its maximum signed size is 4,096 bytes. Its account state uses explicit byte encodings. Invocation memory contains
-temporary owned values and a reclaiming allocator.
+Each existing verification window accumulates its position rank terms
+once. Exact final rank equality is checked before payout. Groups of six
+queries give eleven query windows plus initial preparation. The selected
+signed-v1 local lifecycle uses 91 transactions and peaks at 1,353,196 CU.
+The temporary account reserve is refunded when the account closes.
 
-EVM staged verification
+Security certificate
 
-The vault derives a job identity from the actual request and base proof.
-The first transition checks the AIR equation. The second computes challenges,
-alpha powers and point reductions through the verifier. The vault records
-the resulting cache hash. Subsequent calls supply this authenticated cache
-and contiguous groups of eight query witnesses. All 64 positions must pass.
-Each witness checks four input and five FRI paths, the opening reductions,
-fold-chain consistency and the final polynomial. The last group advances
-the nonce and pays the recipient. An external caller cannot set completed
-progress or choose the authenticated cache.
-
-The EVM transport expands the native shared Merkle openings into independent
-paths. The preparation tool reconstructs and checks every root. The verifier
-accepts canonical field encodings, exact path depths and fixed row widths.
-Extension multiplication uses packed 32-bit Montgomery coefficients. Its
-arithmetic and transcript agree with the native fresh-proof fixtures.
-
-Acceptance invariant
-
-Let P_0,...,P_k be the verification predicates for one fixed job. Its
-progress begins at zero. Only a transition checking the next required
-predicate can advance it. Induction therefore establishes P_0 through
-P_(j-1) whenever progress equals j. Value release requires the terminal
-progress value. Request reconstruction and the fixed job prevent switching
-authority, statement, proof base or parameters between transitions. The
-nonce changes before the EVM external transfer. Solana commits its counter
-and lamport updates atomically. A failed transition preserves prior state.
-
-Under Merkle binding, the independently authenticated rows are consistent
-with the committed codewords, including repeated queried indices. Their
-query equations are the same ones checked by the native verifier. Splitting
-these predicates across transactions preserves their conjunction. This
-argument assumes correct host execution and a persistent immutable policy.
-
-Sorting permutes a finite conjunction and preserves duplicate indices.
-Delta expansion is an exact byte transformation. Its reference is updated
-only after that query verifies. Induction on the protected query counter
-therefore preserves the same complete conjunction with streaming storage.
-
-Latency and relayer operation
-
-Each harness records local proof time, public witness expansion, signed
-transaction processing and interrupted-client recovery. Base reconstructs
-the public cache and reads the accepted prefix from the fixed job. Solana
-resumes its current upload from the program-owned bitmap and handles a
-lost verification response by reading the accepted query count. Retry
-frames bind the intended query, so a stale submission cannot advance a
-later window. The fixtures use independent fee-paying relayers.
-
-latency.json records one local CPU sample with its exact runtime scope.
-observe_networks.py records read-only endpoint round trips and recent
-chain cadence. Live transaction inclusion and finality are separate
-measurements. Transaction count alone does not determine block count.
-
-Chunks within a window can be submitted concurrently and out of order.
-Query deltas depend on the previous accepted query. With five-query groups,
-the job contains fourteen ordered verification windows. Relayer pipelining
-recovers missing chunks from the bitmap before advancing. An optional
-completion probe retains a valid upload when other chunks are pending.
-Live end-to-end measurement covers median and tail
-latency to the selected final confirmation level, completion rate, expired
-blockhashes, interrupted delivery and progress recovery after a rollback.
-
-Security conditions and research obligations
-
-Withdrawal authorization is conditional on quantum-secure authority
-preimage hardness, secure domain-separated derivation, request binding and
-the pinned proof backend's quantum knowledge and repeated-use privacy
-properties. The host provides authenticated execution, protected program
-ownership, persistent state and finality. An L2 adds its settlement and
-data-availability conditions.
-
-The concrete quantum chosen-request reduction and privacy analysis for
-this exact prime-field profile require completion. Its small-field Poseidon2
-authority configuration requires a dedicated cryptanalytic assessment.
-The EVM port, SBF streaming state machine, adversarial lifecycle cases and immutable
-deployment need an independent security audit. The published binary-field
-authorization theorem belongs to its own specified construction. The
-external-vault profile is assessed under the configuration defined here.
-
-The local results establish executable native custody and its measured
-resource costs. Production work includes secret-input handling, relay
-delivery and fee policies, chain-specific fee estimation, repeated-load testnet evaluation,
-wallet integration and the security work above.
-
-Third-party source
-
-Plonky3 adaptations retain the upstream MIT and Apache-2.0 licenses.
-The Talc allocator retains its MIT license. The Cargo workspace records
-the pinned upstream source. Changes cover staged predicates, compiled AIR
-metadata, deterministic symbolic caches and native Keccak execution.
+SECURITY.html and papers/native-vault-security-report.pdf contain the
+native reduction, finite source proof, adaptive simulator, parallel
+compiler and conditional Category 1 resource comparison. The corollary
+states its batch minimum-cost and authority-primitive conditions.

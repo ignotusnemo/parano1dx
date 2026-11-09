@@ -1,0 +1,41 @@
+Coherent response resource condition
+9 November 2026
+
+The Category 1 corollary uses logical bounded-fanin gates and logical
+circuit depth. It fixes at most 2^64 classical authorization requests.
+For each quantum batch s, with A_s gates, delta_s depth and k_sj newly
+charged responses of type j, its resource condition is
+
+    sum_j k_sj c_j <= A_s delta_s,
+    c_j >= 2^20 gate-depth.
+
+The conservative physical call count charges one gate per adversarial
+call, so adversarial calls are bounded by G.
+The batch price applies to the cheaper hash component, including
+parallel execution, workspace reuse and coherent lookup costs. Input
+and output projections retain this same declared floor.
+
+The resource corollary applies to batches satisfying this minimum-cost
+premise. The numerical evaluator records the complete success envelope
+as a function of the price, including a unit-price row and sensitivity.
+
+The concrete assessment in nist-resource-assessment.txt costs published
+direct-call layouts and native fixed-prefix implementations in a stated
+logical gate library. check_hash_circuits.py reproduces the native counts,
+including output projections and a one-bit phase implementation. Its
+data-only charge favors the attacker by omitting phase, cleanup and
+fanout costs. The evaluated layouts support the selected reference price.
+The batch condition above specifies the hypothesis for applying the
+resource corollary to other circuit or quantum-memory implementations.
+
+The ideal proof-layer calculation and the fixed authority-preimage,
+derivation and private-generator games are separate inputs. The full
+Category 1 conclusion applies when their combined advantage is below
+the remaining half-success margin displayed in security-evaluation.json.
+
+The NIST reference is AES-128 key search. Its quantum reference is
+G*D=2^170 at D in {2^40,2^64,2^96}. Its classical reference is 2^143
+gates. The resource theorem uses the complete bound including finite
+simulation, recording and adaptive-update terms at those budgets.
+
+https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)

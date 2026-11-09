@@ -4,6 +4,8 @@ import base64,datetime,hashlib,json,struct,sys,time,urllib.error,urllib.request
 sys.path.insert(0,sys.argv[1])
 from solders.transaction import VersionedTransaction
 from solders.pubkey import Pubkey
+from solders.message import MessageV1
+from Crypto.Hash import keccak
 
 case=Path(sys.argv[2]);r=json.loads((case/'live-result.json').read_text())
 URL='https://api.devnet.solana.com';GENESIS='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG'
@@ -25,7 +27,8 @@ for row in r['transactions']:
     tx.verify_and_hash_message()
     assert str(tx.signatures[0])==row['signature'] and str(tx.message.account_keys[0])==row['fee_payer']
     assert len(raw)==row['transaction_bytes']<=r.get('packet_size_limit',1232)
-    if raw[0]==0x81:
+    if r.get('transaction_version')=='v1':
+        assert isinstance(tx.message,MessageV1)
         assert tx.message.config.compute_unit_limit<=1_400_000
         assert tx.message.config.loaded_accounts_data_size_limit>0
         assert not tx.message.config.priority_fee
@@ -34,8 +37,9 @@ for row in r['transactions']:
             if instruction.data[0]==2:assert int.from_bytes(instruction.data[1:],'little')<=1_400_000
     if row['signature'] in unique:assert unique[row['signature']]==raw
     unique[row['signature']]=raw
-assert [f['frame'] for f in r['frames']]==[65535]+list(range(0,64,5))
-assert [f['accepted_queries'] for f in r['frames']]==[0]+[min(n+5,64) for n in range(0,64,5)]
+group=r['query_batch_size'];assert 1<=group<=6
+assert [f['frame'] for f in r['frames']]==[65535]+list(range(0,64,group))
+assert [f['accepted_queries'] for f in r['frames']]==[0]+[min(n+group,64) for n in range(0,64,group)]
 for frame in r['frames']:
     tx=VersionedTransaction.from_bytes(unique[frame['verification_signature']])
     checks=[i for i in tx.message.instructions if str(tx.message.account_keys[i.program_id_index])==r['program_id'] and i.data[0] in (4,6)]
@@ -86,9 +90,14 @@ network=hashlib.sha256(b'Parano1dX/network/Solana'+bytes(Pubkey.from_string(GENE
 assert bytes(proof['network_domain'])==network
 vault,_=Pubkey.find_program_address([b'Parano1dX-vault',bytes(proof['authority_commitment'])],Pubkey.from_string(r['program_id']))
 assert str(vault)==r['vault']
-request=hashlib.sha256(b'Parano1dX/v1/withdraw/SOL'+network+bytes(Pubkey.from_string(r['program_id']))+bytes(vault)+bytes(proof['parameter_id'])+
-    struct.pack('<Q',r['nonce'])+bytes(Pubkey.from_string(r['recipient']))+struct.pack('<QQ',r['amount_lamports'],r['expires_at_slot'])+bytes(40)).hexdigest()
+message=(b'Parano1dX/v1/withdraw/SOL'+network+bytes(Pubkey.from_string(r['program_id']))+bytes(vault)+bytes(proof['parameter_id'])+
+    struct.pack('<Q',r['nonce'])+bytes(Pubkey.from_string(r['recipient']))+struct.pack('<QQ',r['amount_lamports'],r['expires_at_slot'])+bytes(40))
+request=hashlib.sha256(message).hexdigest()
 assert request==r['request_id']
+context_verified=False
+if 'request_context' in proof:
+    h=keccak.new(digest_bits=256);h.update(message)
+    assert bytes(proof['request_context'])==h.digest();context_verified=True
 authority_transactions={row['signature'] for row in r['transactions'] if row['scope']=='authorization'}
 expected_fee=sum(VersionedTransaction.from_bytes(unique[s]).message.header.num_required_signatures*5000 for s in authority_transactions)
 assert expected_fee==r['actual_network_fee_lamports']
@@ -98,6 +107,7 @@ result={'audited_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(
     'all_64_query_positions_present':True,'payout_lamport_deltas_verified':True,'complete_reserve_refund_verified':True,
     'all_captured_transactions_finalized':True,'intermediate_payouts_absent':True,'maximum_verification_CU':max(verified_cu),
     'immutable_program_ELF_verified':True,'proof_request_matches':True,'request_binding_verified':True,'signature_fees_match_balance_deltas':True,
+    'native_request_context_verified':context_verified,
     'withdrawal_slot':withdraw['slot'],'close_slot':close['slot'],
     'proof_account_creation_slot':creation['slot'],'authorization_slot_span':withdraw['slot']-creation['slot'],
     'authorization_block_time_span_s':withdraw['blockTime']-creation['blockTime'],

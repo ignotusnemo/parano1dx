@@ -1,0 +1,111 @@
+{
+  "base_prime": 2130706433,
+  "batched_functions": 268,
+  "committed_degree_bits": 8,
+  "extension_size_floor_bits": 247,
+  "initial_capacity": [
+    717061448,
+    72617071,
+    1665921021,
+    1658930882,
+    805670388,
+    1621246602,
+    100335137,
+    1383533378,
+    1327607386,
+    1092699141
+  ],
+  "list_decoding_error_bits": 139.6400288515918,
+  "maximum_constraint_degree": 4,
+  "merkle_salt_words": 20,
+  "num_constraints": 62,
+  "poseidon_full_rounds": 8,
+  "poseidon_partial_rounds": 26,
+  "public_seed_digest": "487dbd2a700c5483fdef4b63c346e1e1f58d05af8a42a26021fefa05430b77d15bae21ce064421c0493911ec5b6bd20c7f197fd450e037cbe48ee809b7e7100b",
+  "public_seed_input_bytes": 40,
+  "quantum_compilation": "native QROM theorem and exact bounds: research/security/compiler.txt and security-evaluation.json",
+  "query_grinding_bits": 12,
+  "quotient_chunks": 8,
+  "report": {
+    "ldr": {
+      "regime": {
+        "ListDecoding": {
+          "m": 128
+        }
+      },
+      "terms": [
+        {
+          "bits": 232.04017914041927,
+          "label": "air-composition"
+        },
+        {
+          "bits": 226.82382441548944,
+          "label": "deep-ali"
+        },
+        {
+          "bits": 139.6400288515918,
+          "label": "low-degree-test"
+        },
+        {
+          "bits": 200.5017463583108,
+          "label": "batch-combination"
+        },
+        {
+          "bits": 256.0,
+          "label": "commitment-collision"
+        }
+      ]
+    },
+    "udr": {
+      "regime": "UniqueDecoding",
+      "terms": [
+        {
+          "bits": 241.04580368961314,
+          "label": "air-composition"
+        },
+        {
+          "bits": 235.8294489646833,
+          "label": "deep-ali"
+        },
+        {
+          "bits": 70.35995569995478,
+          "label": "low-degree-test"
+        },
+        {
+          "bits": 226.93930406831245,
+          "label": "batch-combination"
+        },
+        {
+          "bits": 256.0,
+          "label": "commitment-collision"
+        }
+      ]
+    }
+  },
+  "scope": "interactive round-by-round backend analysis",
+  "stream_base_bytes": 9332,
+  "stream_leaf_bytes": [
+    144,
+    272,
+    1152,
+    192,
+    208,
+    208,
+    208,
+    208
+  ],
+  "stream_query_bytes": 7520,
+  "trace_rows": 128,
+  "unique_decoding_error_bits": 70.35995569995478,
+  "query_sampling": "64-element subset, one 512-bit response",
+  "proof_response_groups": 8,
+  "preprocessed_width": 28,
+  "codeword_rows": 4096,
+  "fri_arities": [
+    4,
+    4,
+    4,
+    4
+  ],
+  "initial_challenger_context_bytes": 32
+}

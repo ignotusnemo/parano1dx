@@ -164,11 +164,12 @@ where
         }
     }
 
+    // A PCS matrix reveals one base-field row per query. AIR rotation
+    // transport is a separate obligation, checked in the profile certificate.
     fn hiding_budget(&self, extension_degree: usize, num_points: usize) -> Option<usize> {
         extension_degree
             .checked_mul(num_points.max(1))?
-            .checked_add(self.inner.fri.num_queries)?
-            .checked_mul(2)
+            .checked_add(self.inner.fri.num_queries)
     }
 
     fn check_hiding_budget(
@@ -1596,11 +1597,11 @@ mod tests {
     #[test]
     fn verifier_counts_all_opening_points() {
         let (pcs, _, _, challenger) = make_fixture();
-        let (claims, proof, mut challenger) = unchecked_proof(&pcs, 16, 2, challenger);
+        let (claims, proof, mut challenger) = unchecked_proof(&pcs, 8, 2, challenger);
         assert!(matches!(
             run_verify(&pcs, claims, &proof, &mut challenger),
             Err(FriError::HidingBudgetExceeded {
-                mask_height: 16,
+                mask_height: 8,
                 num_opening_points: 2,
                 ..
             })
@@ -1611,7 +1612,7 @@ mod tests {
     fn verifier_accepts_exact_hiding_budget() {
         let (mut pcs, _, _, challenger) = make_fixture();
         pcs.inner.fri.num_queries = 4;
-        let (claims, proof, mut challenger) = unchecked_proof(&pcs, 16, 1, challenger);
+        let (claims, proof, mut challenger) = unchecked_proof(&pcs, 8, 1, challenger);
         run_verify(&pcs, claims, &proof, &mut challenger).unwrap();
     }
 

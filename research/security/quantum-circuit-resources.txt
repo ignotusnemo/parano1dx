@@ -1,0 +1,271 @@
+Published quantum hash circuit resource assessment
+9 November 2026
+
+Published full-round circuits give concrete calibration for the selected
+response price c=2^20 under logical Clifford+T accounting. The smallest
+reported T-count times T-depth projection reviewed here is 3,686,400 for
+generic Keccak-f[1600]. This is 3.515625 times the selected price. Applying
+that comparison to the native protocol requires fixed-prefix, projected-
+output and amortized batch costing in the same gate library.
+
+The existing complete ideal bound is 0.325523273624783 at GD=2^170 and
+c=2^20. Its sufficient integer price is 682672. The applicable condition
+is, for every coherent batch s,
+
+    sum_j k_sj*c_j <= A_s*delta_s, with c_j >= 2^20.
+
+Here A_s counts elementary logical gates and delta_s is logical depth.
+The model grants the complete 512-bit SHA256||Keccak256 response for
+the cheaper component's cost. The source densities are approximately
+2^-154.94109606926583 and 2^-176.20343729420085. The combined density is
+approximately 2^-154.94109549571493. These values and the complete bound
+come from security-evaluation.json. Construction costs provide attack
+implementations and engineering calibration. A native batch price must
+be assessed with the specializations and sharing available to an attack.
+
+NIST's cited evaluation page uses bounded-depth attack costing. It lists
+AES-128 key search as 2^170/MAXDEPTH quantum gates and considers depth
+values 2^40, 2^64 and 2^96. The comparison here uses that reference budget
+as fixed by resource-contract.txt. The assessment follows its concrete
+attack-cost approach. A theorem about minimum circuit complexity is a
+separate form of evidence. [NIST]
+
+Native block counts and specialization
+
+The actual typed response lengths yield these padded block counts.
+SHA-256 uses ceil((L+9)/64). Keccak-256 uses floor(L/136)+1. [SHA, K]
+
+    Bytes       SHA-256       Keccak-256
+      623          10               5
+      192           4               2
+     9036         142              67
+      364           6               3
+      128           3               1
+      128           3               1
+      128           3               1
+       96           2               1
+       68           2               1
+
+The 68-byte query is seal512||nonce32. Its 64-byte seal is fixed for a
+classical transcript. SHA-256 can cache the chaining state after the
+first block. Its online compression has one variable message word, then
+0x80000000, thirteen zero words and the bit length 544. The nonce is a
+canonical element of p=2130706433, so at most 31 bits vary. Constant
+propagation can also simplify the schedule and early rounds. Digest
+feed-forward must be included when producing an XOR response.
+
+Keccak-256 uses one 1088-bit rate block and one 24-round permutation.
+SHA3-256 uses the same permutation and rate with delimiter 0x06.
+Native Keccak-256 uses delimiter 0x01. The generic permutation topology
+transfers, with changed constant preparation. Constant propagation and
+output pruning require a new circuit for the native function. [K]
+
+For a superposition of transcript prefixes, the cached SHA state also
+needs a coherent preparation or lookup implementation. Cost that access
+and its cleanup. Fixed classical prefixes may be amortized across nonce
+trials belonging to that transcript.
+
+Published circuit figures
+
+The following are quoted construction counts. T and T-dagger gates are
+combined. Full depth and T-depth are distinct. Width means logical
+qubits. Neither physical-qubit-time nor surface-code cycle estimates
+are substituted into the logical gate-depth budget.
+
+Amy et al, 2016, Tables 1 and 2. [A]
+
+    Transform          Qubits    T count   T-depth   Full gates  Full depth
+    SHA-256             2402     401584     171552     1050224      528768
+    SHA-256 T-opt       2402     228992      70400     4611328      830720
+    Keccak-f            3200     591360        792    34030165       10128
+    Keccak-f T-opt      3200     499200        432    34974805       11040
+
+The SHA figures cover a generic 512-bit compression core, 64 rounds and
+48 schedule steps. The Keccak figures cover all 24 rounds. Full gates
+sum X, P, Z, H, CNOT and T-family counts. The SHA T optimization increases
+the full gate-depth product. Preserve both trade-offs when minimizing
+that metric. The unoptimized SHA product is 555324844032, about 2^39.015.
+The unoptimized Keccak product is 344657511120, about 2^38.326.
+Their SHA Grover predicate uses two evaluations plus an
+8108-T comparator, giving 466092 T gates. The diffusion adds 8076 T.
+
+Haener and Soeken, 2020 author version and 2022 publication, Table 2. [H]
+
+    Transform           Qubits     T count   T-depth    T count*T-depth
+    Keccak-f             46400      153600        24            3686400
+    SHA-256              23684       90292      1607          145099244
+    SHA-256 low depth   458974     1801788      1519         2736915972
+
+Table 1 gives 38400 ANDs and AND-depth 24 for full Keccak. This is one
+nonlinear layer per round. The mapping uses four T gates to compute an
+AND and zero T gates for measured uncomputation. Copying inputs to permit
+parallel gates uses extra qubits and CNOTs. Full logical gate count and
+full depth are absent from these tables. Their T product is partial
+accounting for the cited implementation in the Clifford+T library.
+
+Lee et al, SHA-256, first published 2022, Table 3. [L2]
+
+    Circuit          Qubits      T-depth      Toffoli-depth
+    SHA-Z1             768         43510              32895
+    SHA-Z2             797         16055              12023
+    SHA-Z3             927          7304               6914
+    SHA-Z4             962          4936               4418
+
+These are depth and width figures. The table supplies neither complete
+gate counts nor full depth. Section 2.4.2 omits final constant additions
+for the Grover comparison. SHA-Z4's 4418 is its Toffoli-depth.
+
+Lee et al, SHA3-256, 2024, Table 2. [L3]
+
+    Circuit   Qubits   T count   T-depth    Toffoli count   Toffoli-depth
+    Z1          1600    284160       264           53760             168
+    Z2          2240    330240       216           53760             144
+    Z3          4800    844800       192          153600              96
+    Z4          2240    268800       192           53760*            144*
+    Z5          4800    614400       144          153600*             96*
+
+These are full 24-round in-place permutation designs for a one-block
+message. Stars include AND and AND-dagger operations. Z4 and Z5 use
+measurement-based cleanup. The four linear steps require CNOT or X,
+whose complete counts and full depth are absent from Table 2. The
+optimization software is reported as unavailable publicly.
+
+Kim, Jeong and Han, 2018, Section 6.3 and Table 6, give a SHA-C6 forward
+Toffoli-depth of 10112 using 938 qubits. Their Grover iteration explicitly
+costs twice the hash plus C256NOT comparison and C266NOT diffusion.
+Their comparison changes when parallel workspaces and comparator
+ancillae change. [KHJ]
+
+Clean XOR response costing
+
+For a unitary implementation U that preserves x and computes the exact
+function into workspace, compute, copy q output bits, then apply U's
+inverse. A direct schedule costs 2g+q gates and depth 2d+1. Preparation,
+input duplication and missing digest feed-forward add their own costs.
+Its T count and T-depth are twice U's values before further optimization.
+These formulas describe a particular wrapper.
+
+The logic-network method gives a cheaper cleanup option. Meuli et al
+explicitly construct
+
+    |x>|y>|0^k> -> |x>|y XOR f(x)>|0^k>
+
+with at most four T gates per AND. Computation costs four T gates and
+measured uncomputation costs zero T gates. The input is preserved.
+Output copying uses CNOTs. Therefore a clean XOR realization does not
+require doubling the four-T-per-AND count. Measurement, correction,
+reset, fanout and output copying still contribute to full accounting.
+The construction is defined on superpositions and entangled inputs. [M]
+
+For Lee's unitary Keccak Z2, an explicit compute-copy-inverse wrapper
+has 660480 T gates and T-depth 432, a T-only product of 285327360.
+Measurement-assisted circuits need their own cleanup schedule. A source
+that already includes cleanup should be charged once.
+
+Metric and batch interpretation
+
+In a fixed Clifford+T implementation, the T-only product is no larger
+than that implementation's full gate count times full depth. This
+comparison applies to that implementation and gate vocabulary. With
+atomic AND gates, the Haener-Soeken network's AND-only product is
+38400*24=921600. It is 0.87890625 times 2^20 and 1.3499894532074 times
+682672. Its Clifford+T T-only product is four times larger. Fixing the
+elementary gate vocabulary is therefore material near the chosen price.
+
+For k disjoint copies of one circuit with g gates and depth d,
+A=k*g and delta=d. Then A*delta/k=g*d. Serial reuse of one workspace has
+A=k*g and delta=k*d, giving A*delta/k=k*g*d before sharing optimizations.
+Common subexpressions, retained intermediate states, pipelining and
+coherent lookup can change those equalities. Assess the actual batch.
+
+The full hybrid at the cheaper component's cost is an explicit
+conservative grant. Output projections can lower comparator and copy
+costs. They can also remove gates from the output dependency cone.
+Prune before counting. Assess both components and the cheapest useful
+projection. Use the resulting price in the complete success evaluator.
+
+Source reconciliation
+
+Haener-Soeken Table 3 quotes an earlier Keccak T count 24640 and T-depth
+33. Those values equal Amy's single-round chi plus chi-inverse counts.
+Use full permutation rows for a 24-round query. [A, H]
+
+Song et al, 2023, Table 3 reports chi T-depth 23 and full depth 12.
+These figures require distinct gate conventions or a correction before
+a Clifford+T gate-depth comparison. Its mixed-depth row is preserved
+in the JSON notes and excluded from the selected comparison. [S]
+
+The live ePrint metadata for 2024/513 says withdrawn on 26 February 2025.
+Indexed preprint tables are excluded. Verify tables in the published
+successor, DOI 10.1109/TETC.2025.3546648, before relying on them. [W]
+
+Remaining work
+
+Compile the native fixed-prefix nonce functions with constant propagation
+and the actual canonical nonce domain. Prune output projections and
+useful acceptance predicates. Record complete logical gate count, full
+depth, qubits and measurement costs for meaningful workspace trade-offs.
+Check coherent transcript selection and amortized batches against the
+stated resource condition. Reevaluate the complete success bound for
+any selected price. The parent assessment records native specialization
+experiments separately from this literature ledger.
+
+Reproduce arithmetic
+
+The JSON contains exact source counts, all gate-count components,
+products, fractions and source locators. This read-only Python snippet
+recomputes the products and padded block counts.
+
+    import json
+    from pathlib import Path
+    d = json.loads(Path('research/security/quantum-circuit-resources.json').read_text())
+    for r in d['circuits']:
+        if r['gate_counts'] is not None and r['full_depth'] is not None:
+            g = sum(r['gate_counts'].values())
+            print(r['id'], g, r['full_depth'], g*r['full_depth'])
+        if r['T_count'] is not None:
+            print(r['id'], 'T-only', r['T_count']*r['T_depth'])
+    for r in d['native_block_counts']:
+        n = r['input_bytes']
+        print(n, (n+72)//64, n//136+1)
+
+Primary sources
+
+[A] Amy et al. arXiv:1603.09383v3, 30 November 2016.
+https://arxiv.org/pdf/1603.09383v3
+
+[H] Haener and Soeken. arXiv:2006.03845v1, 6 June 2020.
+https://arxiv.org/pdf/2006.03845v1
+Published successor, ACM Transactions on Quantum Computing 3(2), 2022.
+https://doi.org/10.1145/3501334
+
+[M] Meuli et al. ICCAD 2019.
+https://msoeken.github.io/papers/2019_iccad.pdf
+https://arxiv.org/abs/1908.01609
+
+[L2] Lee et al. IET Information Security 17(1), 46-65, 2023.
+First published 28 June 2022.
+https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/ise2.12074
+
+[L3] Lee et al. Quantum Information Processing 23, 153, 2024.
+https://link.springer.com/article/10.1007/s11128-024-04365-2
+Institutional copy:
+https://ksp.etri.re.kr/ksp/article/file/68789.pdf
+
+[KHJ] Kim, Jeong and Han. arXiv:1805.05534v1, 15 May 2018.
+https://arxiv.org/pdf/1805.05534v1
+
+[SHA] FIPS 180-4, sections 5.1.1 and 6.2.
+https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+
+[K] Keccak designers' specification summary.
+https://keccak.team/keccak_specs_summary.html
+
+[NIST] NIST PQC security evaluation criteria, retrieved 9 November 2026.
+https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)
+
+[S] Song, Jang and Seo. Applied Sciences 13(6), 3558, 2023.
+https://www.mdpi.com/2076-3417/13/6/3558
+
+[W] Withdrawn ePrint metadata and history, retrieved 9 November 2026.
+https://eprint.iacr.org/2024/513

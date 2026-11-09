@@ -16,12 +16,17 @@ parser.add_argument('--transaction-version',choices=['legacy','v1'],default='leg
 parser.add_argument('--chunks-per-transaction',type=int,choices=[1,2,3],default=1)
 parser.add_argument('--merge-final-upload',action='store_true')
 parser.add_argument('--eager-window',action='store_true')
+parser.add_argument('--group-size',type=int,default=6)
 args=parser.parse_args()
 assert args.run.replace('-','').replace('_','').isalnum() and 0<args.send_rate<=8
+assert 1<=args.group_size<=6
 assert args.transaction_version=='v1' or args.chunks_per_transaction==1
 assert not args.merge_final_upload or args.transaction_version=='v1'
 assert not args.eager_window or args.transaction_version=='v1' and args.tpu_relay and not args.merge_final_upload
 sys.path.insert(0,args.python_tools)
+from Crypto.Hash import keccak
+def kh(data):
+    h=keccak.new(digest_bits=256);h.update(data);return h.digest()
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.hash import Hash
@@ -198,21 +203,23 @@ send([transfer(TransferParams(from_pubkey=payer.pubkey(),to_pubkey=vault,lamport
     'deposit_native_SOL',scope='setup',wait=True)
 vault_before=account(vault);nonce=int.from_bytes(vault_before['bytes'][40:48],'little')
 amount=2_500_000;expires=rpc('getSlot',[{'commitment':'confirmed'}])+5000
-request=hashlib.sha256(b'Parano1dX/v1/withdraw/SOL'+bytes.fromhex(network)+bytes(pid)+bytes(vault)+
-    bytes(proof['parameter_id'])+struct.pack('<Q',nonce)+bytes(recipient.pubkey())+struct.pack('<QQ',amount,expires)+bytes(40)).digest()
+message=(b'Parano1dX/v1/withdraw/SOL'+bytes.fromhex(network)+bytes(pid)+bytes(vault)+
+    bytes(proof['parameter_id'])+struct.pack('<Q',nonce)+bytes(recipient.pubkey())+struct.pack('<QQ',amount,expires)+bytes(40))
+request=hashlib.sha256(message).digest();context=kh(message)
 fee_balances_before={str(k.pubkey()):balance(k.pubkey()) for k in [payer,second]}
 started=time.monotonic();started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat()
-subprocess.run([args.prover,str(RESULTS),request.hex(),network],check=True,env=environment)
+subprocess.run([args.prover,str(RESULTS),request.hex(),network,context.hex()],check=True,env=environment)
 subprocess.run([sys.executable,str(ROOT/'evm/prepare.py'),str(RESULTS)],check=True,env={**os.environ,'PYTHONPATH':args.python_tools})
 prepared_s=time.monotonic()-started
 base=(RESULTS/'stream-base.bin').read_bytes();deltas=[(RESULTS/f'stream-delta-{i:02}.bin').read_bytes() for i in range(64)]
-GROUP=5
+GROUP=args.group_size
 frames=[(start,bytes([len(deltas[start:start+GROUP])])+b''.join(struct.pack('<H',len(x))+x for x in deltas[start:start+GROUP]))
     for start in range(0,64,GROUP)]
-WINDOW=256+9792+7212;capacity=max(len(base),max(len(data) for _,data in frames));space=WINDOW+capacity
+proof=json.loads((RESULTS/'native-proof.json').read_text())
+WINDOW=256+9858+proof['stream_query_bytes'];capacity=max(len(base),max(len(data) for _,data in frames));space=WINDOW+capacity
 reserve=rpc('getMinimumBalanceForRentExemption',[space,{'commitment':'confirmed'}])
 send([create_account(CreateAccountParams(from_pubkey=payer.pubkey(),to_pubkey=job.pubkey(),lamports=reserve,space=space,owner=pid)),
-    ix(bytes([1])+hashlib.sha256(base).digest()+request+bytes([GROUP]),[meta(job.pubkey(),True,True),meta(payer.pubkey(),False,True)])],
+    ix(bytes([1])+hashlib.sha256(base).digest()+request+bytes([GROUP])+kh(base)+context,[meta(job.pubkey(),True,True),meta(payer.pubkey(),False,True)])],
     'create_proof_buffer',signers=[payer,job],wait=True)
 if watcher:watcher.subscribe({'op':'account','pubkey':str(job.pubkey()),'level':'confirmed','tag':'job'})
 upload_accounts=[meta(job.pubkey(),True),meta(payer.pubkey(),False,True)]
@@ -235,7 +242,10 @@ for frame,payload in [(65535,base)]+frames:
                 ix(bytes([6])+struct.pack('<QQQHI',nonce,amount,expires,frame,epoch),verify_accounts)]
             packet=send(instructions,'upload_with_completion_probe',hash_info=hot_info,cu=1_400_000,deferred=True)
             packet['upload_offset']=offset;packets.append(packet)
-        inject=args.faults and frame==15
+        if frame==65535:
+            simulation=rpc('simulateTransaction',[packets[0]['transaction_base64'],{'encoding':'base64','commitment':'confirmed','sigVerify':True}])['value']
+            assert simulation['err'] is None, sanitize(json.dumps({'initial_frame_preflight':simulation['err'],'logs':simulation.get('logs',[])}))
+        inject=args.faults and frame==3*GROUP
         delivered=list(packets)
         if inject:random.Random(701).shuffle(delivered)
         dropped=delivered.pop(len(delivered)//2) if inject else None
@@ -254,6 +264,9 @@ for frame,payload in [(65535,base)]+frames:
                 mask=int.from_bytes(state[121:129],'little')
                 missing=[row for row in packets if not mask&(1<<(row['upload_offset']//CHUNK))]
                 if missing:
+                    statuses=rpc('getSignatureStatuses',[[row['signature']for row in missing],{'searchTransactionHistory':True}])['value']
+                    failures=[status['err']for status in statuses if status and status['err']]
+                    if failures:raise RuntimeError(sanitize(json.dumps({'window_rejected':frame,'errors':failures})))
                     submit_batch(missing,repeat=True);retries+=1
                     if inject:events.append({'case':'bitmap_resume_missing_chunks_only','frame':frame,'missing_offsets':[row['upload_offset'] for row in missing]})
                 last_retry=time.monotonic()
@@ -267,7 +280,7 @@ for frame,payload in [(65535,base)]+frames:
         continue
     frame_start=time.monotonic();state=job_state(True);epoch=int.from_bytes(state[129:133],'little')
     offsets=list(range(0,len(payload),CHUNK));expected_mask=(1<<len(offsets))-1
-    inject=args.faults and frame==15
+    inject=args.faults and frame==3*GROUP
     if inject:random.Random(701).shuffle(offsets)
     held=offsets[-args.chunks_per_transaction:] if args.merge_final_upload else []
     if held:
@@ -360,6 +373,9 @@ for frame in frame_records:
     verification_receipts.append({'signature':frame['verification_signature'],'slot':receipt['slot'],'block_time':receipt['blockTime'],
         'compute_units':receipt['meta']['computeUnitsConsumed'],'fee_lamports':receipt['meta']['fee'],'logs':receipt['meta']['logMessages']})
     time.sleep(.15)
+if args.faults:
+    assert any(e['case']=='reordered_window_batch_with_lost_packet'for e in events)
+    assert any(e['case']=='bitmap_resume_missing_chunks_only'for e in events)
 result={'network':'Solana Devnet','genesis_hash':GENESIS,'rpc_endpoint':RPC_PUBLIC,'account_read_endpoint':ACCESS.get('account_read_url',RPC_PUBLIC),'rpc_provider':ACCESS.get('provider','Public RPC'),'real_assets_used':False,
     'transaction_version':args.transaction_version,'chunks_per_upload_transaction':args.chunks_per_transaction,'upload_chunk_bytes':CHUNK,
     'final_upload_and_verification_merged':args.merge_final_upload,'intermediate_payouts_checked_in_receipts':True,

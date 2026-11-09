@@ -404,9 +404,8 @@ where
         transcript.ood_phase::<Com<SC>>(commitments.quotient_chunks.clone(), opt_r_commit);
     // A zero difficulty still occupies a slot in the proof, keeping its shape fixed.
     let ood_pow_witness = ood_pow_witness.unwrap_or(Val::<SC>::ZERO);
-    let zeta_next = trace_domain
-        .next_point(zeta)
-        .expect("domain should support next_point operation");
+    let mut zeta_next=zeta;
+    for _ in 0..air.next_row_stride() {zeta_next=trace_domain.next_point(zeta_next).expect("next point");}
 
     let is_random = opt_r_data.is_some();
     let main_next = !air.main_next_row_columns().is_empty();
@@ -756,7 +755,7 @@ where
         .in_scope(|| trace_domain.selectors_on_coset(quotient_domain));
 
     let qdb = log2_strict_usize(quotient_domain.size()) - log2_strict_usize(trace_domain.size());
-    let next_step = 1 << qdb;
+    let next_step = (1 << qdb) * air.next_row_stride();
 
     // We take Pack::WIDTH worth of values at a time from a quotient_size slice, so we need to
     // pad with default values in the case where quotient_size is smaller than Pack::WIDTH.

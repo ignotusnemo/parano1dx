@@ -1,0 +1,23 @@
+{
+  "native_replay_matches": true,
+  "hash_bits": 512,
+  "initial_context_bytes": 32,
+  "response_inputs_bytes": [
+    623,
+    192,
+    9036,
+    364,
+    128,
+    128,
+    128,
+    96,
+    68
+  ],
+  "field_challenges": 7,
+  "raw_blocks_per_field_challenge": 1,
+  "raw_blocks_per_complete_query_response": 1,
+  "query_positions": 64,
+  "all_positions_distinct": true,
+  "merkle_input_length_mod_four": 2,
+  "authority_seed_input_bytes": 40
+}

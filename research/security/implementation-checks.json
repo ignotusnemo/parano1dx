@@ -1,0 +1,73 @@
+{
+  "profile": "128-row odd-execution trace, 4096 code positions, 64 distinct queries, extension 8",
+  "native_stream": {
+    "altered_query_rejected": true,
+    "batch_sizes_checked": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "cache_bytes": 9858,
+    "changed_request_rejected": true,
+    "host_check_ms_including_mutations": 236.38458400000002,
+    "invalid_query_grinding_rejected": true,
+    "last_query_corruption_rejected": true,
+    "query_count": 64,
+    "stream_conjunction_verified": true
+  },
+  "evm": {
+    "positive_lifecycle_completed": true,
+    "native_transcript_matches": true,
+    "independent_relayers_checked": true,
+    "altered_proof_rejected": true,
+    "altered_cache_rejected": true,
+    "query_skip_rejected": true,
+    "changed_amount_rejected": true,
+    "changed_recipient_rejected": true,
+    "replay_rejected": true,
+    "invalid_query_grinding_rejected": true,
+    "authorization_transactions": 7,
+    "authorization_gas": 71160950,
+    "relayer_restart_recovery_checked": true
+  },
+  "solana": {
+    "maximum_verification_transaction_CU": 1353196,
+    "proof_buffer_rent_refunded": true,
+    "authorization_transactions": 91,
+    "positive_lifecycle_completed": true,
+    "replay_rejected": true,
+    "changed_recipient_rejected": true,
+    "invalid_opening_rejected": true,
+    "invalid_hint_rejected": true,
+    "recipient_resize_between_steps_checked": true,
+    "independent_relayers_checked": true,
+    "relayer_restart_recovery_checked": true
+  },
+  "source_sha256": {
+    "experiments/native-vault/auth/src/lib.rs": "9a7f8854d21dc6194be90fcb5c9273025f992a925b4b9df7c9c039f7e8c7c823",
+    "experiments/native-vault/auth/src/poseidon_constants.rs": "0209f8e527161809516e257a269bbeab03e9b016eeca455f09e346b4294dc427",
+    "experiments/native-vault/auth/src/sampler.rs": "810b6a2267775c6dd399ced95e73b4d6ea2c7033a16aeae92b2315875cace0db",
+    "experiments/native-vault/auth/src/stream.rs": "e64e415ca6f9f6d3e8e842fd7ccb7be029a6bdbfe3ceffad5cc30ad429206c03",
+    "experiments/native-vault/auth/src/stream_parameters.rs": "268e0b26f308edd80f7cfd7c952fc59e69486815a93bc866d47df8eb5dbb1be6",
+    "experiments/native-vault/auth/src/wire.rs": "6ceab3573dd10f218c53568255e81772544de2c54f728d7461004ce42d604217",
+    "experiments/native-vault/evm/Parano1dFactory.sol": "367be72a787cef77abc8630a179f657321fd4e101289445bc57bb8e80787960b",
+    "experiments/native-vault/evm/Parano1dVault.sol": "67220d789fadb0beccb9a1af17ac6660e0adab7c3e350bfaa4c64e32351fdd63",
+    "experiments/native-vault/evm/VField.sol": "3a6f81a86651b4d2909fd029d9e945d0d0449d256fedce296c0d27f8b61e4859",
+    "experiments/native-vault/evm/VParameters.sol": "17faadfc99c89ba8c8b616f590157e67b21404fe1cf416d4061bc3d04e7fa329",
+    "experiments/native-vault/evm/VSampler.sol": "053e04da53b0d7bf2a9133bc8047a2ca19c0b8e1bc057cdb478af532bcdc985c",
+    "experiments/native-vault/evm/VVerifier.sol": "05c06651f8596659849036f16a5056af3a429ebae3e86b48f60f36cefff0d9ba",
+    "experiments/native-vault/solana/src/lib.rs": "65605e4874178a8e5e3983bc25983ad5202b8113e5057a3233a78f6f5ef988ba",
+    "experiments/native-vault/auth/build.rs": "8ea8bb52789d431602330b4936639e0559da599940a2358be9ef12ca173ed1d7"
+  },
+  "fresh_native_proof": {
+    "honest_proof_verified": true,
+    "checkpoint_conjunction_verified": true,
+    "altered_opening_rejected": true,
+    "root_recovery_and_network_index_separation": true,
+    "public_preprocessing_key_matches_deployed_fixture": true
+  },
+  "parallel_backend_enabled": true
+}

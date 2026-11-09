@@ -570,7 +570,7 @@ where
     }
 
     for row_index in 0..height {
-        let row_index_next = (row_index + 1) % height;
+        let row_index_next = (row_index + air.next_row_stride()) % height;
 
         // SAFETY: both indices are strictly less than `height`.
         let local = unsafe { main.row_slice_unchecked(row_index) };
@@ -697,7 +697,7 @@ where
         }
 
         // Wrap around to row 0 after the last row.
-        let row_index_next = (row_index + 1) % height;
+        let row_index_next = (row_index + air.next_row_stride()) % height;
 
         // SAFETY: both indices are strictly less than `height`.
         let local = unsafe { main.row_slice_unchecked(row_index) };

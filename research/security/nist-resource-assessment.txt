@@ -1,0 +1,270 @@
+NIST-style Category 1 resource assessment
+9 November 2026
+
+The fixed external native-vault profile supports a conservative
+preliminary NIST-style Category 1 classification under its documented
+QROM, authority, derivation, generator, host and resource conditions.
+At the AES-128 reference budget, the complete ideal proof-loss bound
+is 0.325523273624783 when the amortized response price is 2^20
+gate-depth. The separate primitive advantages must sum to less than
+0.174476726375217.
+
+Native fixed-prefix circuits now supply concrete resource evidence for
+that price. Across the evaluated SHA-256 and Keccak constructions,
+three seal samples and pruned output projections, the cheapest
+conservative data-computation product is 3,014,449 gate-depth. This
+includes an explicitly assessed one-bit phase interface. It is 2.875
+times the selected price and 4.416 times the sufficient price 682672.
+
+The exact QROM theorem, the evaluated direct-circuit model and the
+broader cryptanalytic assumptions are stated separately below. This
+is a completed preliminary resource assessment in the NIST style.
+Alternate attack algorithms, circuit synthesis and memory tradeoffs
+remain subjects of continued cryptanalysis.
+
+1. Exact native theorem and Category 1 arithmetic
+
+The implementation uses a 4096-position domain, degree-eight
+challenges, 64 distinct queries, twenty salt words, twelve grinding
+bits and Poseidon2 RF=8, RP=26. The source agreement threshold is 896.
+The exact query-response density is approximately 2^-154.9410960693.
+The field density is approximately 2^-176.2034372942.
+
+For response types j and parallel batches s, compiler.txt gives the
+transition amplitude sqrt(10 sum_j k_sj*kappa_j/(1-beta/N)), where
+N=2^512 and beta=8T+32. Its protected-prefix construction, adaptive
+updates, recording bound and witness-free simulator supply the finite
+terms. Count setup, constructor, projection and terminal calls in T.
+
+If sum_j k_sj*c_j <= A_s*delta_s for every batch, sum A_s <= G and
+sum delta_s <= D, Cauchy-Schwarz gives the documented authorization bound
+
+  Adv_pre(B)+eps_der+eps_rng+eps_sim
+  +(sqrt(10*GD*max_j(kappa_j/c_j)/(1-beta/N))
+      +E_protect+E_updates+E_record)^2.
+
+The evaluator uses kappa_query+kappa_field and c=2^20. With GD=2^170,
+D in {2^40,2^64,2^96} and at most 2^64 classical authorization requests,
+its complete ideal bound is at most 0.325523273624783. At 2^143
+classical gates its bound is 0.000254315057964 even with a unit
+price per physical hash call. These values include the finite terms.
+
+The smallest sufficient integer price for an ideal bound below one
+half is 682672. The chosen price is supported by the independent
+native circuit assessment below. The full authorization conclusion
+also requires Adv_pre(B)+eps_der+eps_rng < 0.174476726375217, with the
+complete deterministic extraction and candidate-validation work
+included in B as specified in authorization.txt.
+
+2. NIST reference and logical-gate vocabulary
+
+NIST Category 1 compares computational resources with AES-128 key
+search across relevant metrics. Its stated reference is
+2^170/MAXDEPTH quantum gates or 2^143 classical gates, with example
+depths 2^40, 2^64 and 2^96. NIST asks for conservative preliminary
+classifications based on attack estimates [1].
+
+For a retained binary Boolean DAG, let C be its live AND count plus
+its live XOR count, and d its AND-depth. The assessed direct model
+evaluates those nodes individually. Grant each AND and XOR unit cost
+and all complemented edges zero cost. Then the complete logical gate
+count is at least C and the logical depth at least d for that
+realization. C*d is an optimistic resource proxy. It omits fanout,
+workspace preparation, cleanup, measurement corrections and XOR depth.
+
+For k independent closed calls, A_s >= k*C and delta_s >= d, so
+A_s*delta_s >= k*C*d. This justifies the selected price within the
+evaluated direct-call family. Calls split across scheduling intervals
+must include their complete dependency computation in the accounting.
+
+The four-T temporary-AND mapping supplies a separate Clifford+T
+check. T-count times T-depth describes partial accounting in that
+mapping. It is distinct from the all-gate AES reference. Counting only
+AND nodes discards the live XOR work and is insufficient for the
+all-gate comparison.
+
+3. Native fixed-prefix and output-cone results
+
+The candidate input is a fixed 64-byte seal followed by a canonical
+four-byte field nonce. There are p=2130706433 canonical nonces,
+approximately 2^30.9886846874. The counter uses 31 variable nonce
+bits and a fixed zero top bit. It computes a superset of the canonical
+domain and omits the range-check cost.
+
+SHA-256 needs two padded compression blocks. The counter caches the
+first block's classical midstate and retains the complete second-block
+schedule, 64 rounds and digest feed-forward. It evaluates ripple
+majority and Kogge-Stone carry constructions. Native Keccak-256 uses
+one padded permutation with its 136-byte rate and 0x01 delimiter.
+
+The DAG applies local constant propagation, complemented edges,
+structural common-subexpression elimination and output-cone pruning.
+It uses zero, all-0xff and deterministic SHA-512 seal samples. The
+measured minima over those samples are
+
+  Construction and projection     C         d       C*d
+
+  Keccak full 256-bit output      141202      24      3388848
+  Keccak native grind bits        135882      24      3261168
+  Keccak one output bit           131367      24      3152808
+  Keccak phase data dependencies  131063      23      3014449
+  SHA ripple one output bit        92485    1497    138450045
+  SHA prefix one output bit       220898    1141    252044618
+
+The native grind is digest byte 30's low four bits and all of byte 31.
+The one-bit interface is digest byte 31's low bit. SHA rows use the
+same byte projections for a component-cost comparison. Full SHA
+outputs and twelve-bit projections have larger products in these
+constructions. The complete sample ranges are in the JSON assessment.
+
+The theorem's component simulation grants full hybrid responses, so
+the resource comparison uses the cheaper component or projection.
+Summing the two component circuit costs would overprice that interface.
+The native response lengths are 623, 192, 9036, 364, 128, 128, 128,
+96 and 68 bytes. The present concrete specialization covers the
+68-byte candidate and its selected output cones.
+
+The counter validates 144 hashes against hashlib.sha256 and
+Crypto.Hash.keccak, plus 48 full-symbolic Keccak padded messages.
+This assessment independently rebuilt all nine sampled DAGs,
+recounted every retained gate and depth, and checked 432 hashes.
+This includes 288 additional nonce cases. Every comparison passed.
+
+4. One-bit phase interface
+
+A phase query implements |x> -> (-1)^h(x)|x>. The assessment includes
+the usual clean output-XOR implementation with phase kickback and a
+second construction that strips the final XOR cone.
+
+Expand that cone over F2, cancel repeated terms, and use
+
+  (-1)^(a XOR b) = (-1)^a * (-1)^b.
+
+At the remaining frontier, an AND contributes a CZ phase on its two
+controls and a variable contributes Z. Compute their data dependencies,
+apply the phases and clean the work registers. Complemented controls
+are handled by the corresponding signed phases. The constant term
+contributes a global phase for each fixed classical prefix. Coherent
+prefix selection must retain any relative phase.
+
+For the cheapest Keccak sample, the data computation has 32,703 AND
+nodes, 98,360 XOR nodes and AND-depth 23. Its product is 3,014,449.
+This grants the attacker all frontier phases, fanout and cleanup for
+free in the reported proxy. Counting each frontier phase as one gate
+and including one phase layer gives the larger proxy 3,533,928.
+
+The public counter generates all nine phase rows and validates both
+the frontier parity and the actual signed-control CZ/Z expression on
+144 hash cases. Independent parity validation covered 432 hashes.
+Its public main entrypoint was replayed with the ledger write
+intercepted and regenerated the final JSON byte for byte. Further
+diagonal circuit resynthesis belongs to the broader circuit-optimization
+assumption. The assessed phase implementation supports the chosen
+2^20 price with the stated margin.
+
+5. Relation to published quantum circuits
+
+The full-symbolic Keccak counter gives 38,400 AND nodes at depth 24
+and 115,200 XOR nodes. This agrees with the published AND count and
+depth of Haener and Soeken. Their temporary-AND construction gives
+153,600 T gates, T-depth 24 and width 46,400 [2]. Measured cleanup can
+erase AND work at zero additional T cost [3]. The native audit
+therefore avoids automatic T-count doubling for a clean XOR oracle.
+
+Amy et al. report a generic one-block SHA layout with 1,050,224 listed
+logical gates and depth 528,768. Their T-optimized layout has more
+total logical gates. Their Keccak layout has 34,974,805 listed gates
+and depth 11,040 [4]. These published constructions provide a
+cross-check on realistic hash costs. The native fixed-prefix and
+projection audit supplies the implementation-specific comparison.
+
+6. Classical preprocessing, memory and sharing
+
+A complete fixed-seal component table contains 68,182,605,856 bytes,
+approximately 63.5 GiB. A complete hybrid table contains
+136,365,211,712 bytes, approximately 127 GiB, before addresses,
+lookup workspace and error correction.
+
+For a fixed rooted prefix, the ideal chance that its complete nonce
+table contains a bad query response is at most p*kappa_query,
+approximately 2^-123.952411382. Classical enumeration charges those
+evaluations when the table is constructed. Once values are classically
+known, reversible reads can use the recorded table without new oracle
+calls. The existing protected-prefix condition charges attempts to
+attach cold response rows to later prefixes through the recorded-label
+events. This gives a scoped treatment of complete classical tables.
+
+Partial and adaptive tables need joint accounting of preparation,
+fresh coherent calls and retained information. Quantum-prepared tables
+need their coherent preparation and subsequent reuse costed together.
+The physical k_s in the theorem remains the physical query count.
+
+SELECT-SWAP constructions trade workspace, T-count and depth [5].
+Parallel lookup circuits can share substantial work across requests
+[6]. More recent architectures add further space, depth and error
+tradeoffs [7]. The broader attack assessment must therefore cost
+complete batches, including coherent prefix selection, shared hash
+work, routing, fanout, memory size and cleanup. A unit-cost QRAM model
+needs an AES reference evaluated in the same model.
+
+7. Classification and continuing research conditions
+
+The completed direct-circuit assessment supports conservative
+preliminary NIST-style Category 1. Native fixed-prefix specialization,
+the grind projection and two one-bit phase implementations retain a
+resource margin over the chosen price. The exact QROM theorem gives
+the displayed complete advantage bound whenever every adversarial
+batch meets its stated price. The classical proof layer has a
+substantial margin even at unit call cost.
+
+The broader classification uses the standard cryptanalytic condition
+that alternative attacks do not lower the resource requirement below
+the Category 1 reference. Continue evaluating additional prefix values,
+restricted-domain optimization, alternate hash architectures, diagonal
+phase synthesis, cross-candidate work sharing and quantum memory
+tradeoffs. Keep setup and physical calls in the complete accounting.
+
+The separate authority-preimage, joint HKDF and private-generator
+advantages must satisfy the stated margin for the complete extractor.
+Each deployment must establish the host conditions in authorization.txt.
+
+References
+
+[1] NIST, PQC evaluation criteria, Security Strength Categories.
+https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)
+
+[2] Haener and Soeken, Lowering the T-depth of Quantum Circuits By
+Reducing the Multiplicative Depth Of Logic Networks, arXiv:2006.03845,
+Tables 1 and 2.
+https://arxiv.org/pdf/2006.03845
+
+[3] Meuli et al., The Role of Multiplicative Complexity in Compiling
+Low T-count Oracle Circuits, ICCAD 2019. Clean XOR mapping and
+measurement-assisted cleanup.
+https://msoeken.github.io/papers/2019_iccad.pdf
+
+[4] Amy et al., Estimating the cost of generic quantum pre-image attacks
+on SHA-2 and SHA-3, arXiv:1603.09383v3, Tables 1 and 2.
+https://arxiv.org/pdf/1603.09383
+
+[5] Low, Kliuchnikov and Schaeffer, Trading T gates for dirty qubits in
+state preparation and unitary synthesis, Quantum 8, 1375 (2024).
+https://arxiv.org/html/1812.00954
+
+[6] Beals et al., Efficient Distributed Quantum Computing,
+arXiv:1207.2307v2, Theorem 5 and Section 4.3.
+https://arxiv.org/html/1207.2307
+
+[7] Zhu, Sundaram and Low, Unified Architecture for Quantum Lookup
+Tables, arXiv:2406.18030, Table I and lookup constructions.
+https://arxiv.org/html/2406.18030
+
+Exact counts, phase-frontier data, validation results, resource scopes
+and source hashes are recorded in nist-resource-assessment.json.
+The native circuit artifacts are check_hash_circuits.py and
+hash-circuit-checks.json. Reproduce them with PyCryptodome available
+in the Python environment by running
+
+  python3 research/security/check_hash_circuits.py
+
+The minimum_sampled_phase_data row reproduces the 3,014,449 product.

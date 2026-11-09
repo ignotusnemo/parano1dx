@@ -1,0 +1,212 @@
+Native salted-forest simulation
+9 November 2026
+
+Let H=SHA256||Keccak256 be a uniform 512-bit random function, with
+coherent access to either component. Its leaf, node and transcript
+namespaces are the actual disjoint namespaces in compiler.txt. Put
+
+    N=2^512, n=13648, u=13641, v=n+u=27289, eta=2^-140.
+
+Fix the public seed row H(AUTH_DOMAIN)=d. It determines the ten authority
+capacity elements. All other hash rows form a uniform completion. The
+seed row has length 40, disjoint from every leaf, node and transcript
+input used below. The simulator and every input exchange fix this row.
+
+An attempt contains three private 4096-position source trees and four
+FRI trees of sizes 1024,256,64,16. It reveals at most K=448 private
+leaves. The public preprocessing tree is separately authenticated.
+Every private leaf contains at least sixteen payload elements and twenty
+independent field salts per matrix row. The quotient leaf concatenates
+eight separately salted rows. Its dummy-input domain has cardinality
+at least p^36. Actual-view leaf inputs retain twenty fresh
+salts. All encodings are injective.
+
+1. A balanced random-function table
+
+For each complete private leaf width b in {36,52,68,288}, let A_b be
+the set of its correctly encoded b field elements. For a fixed digest y,
+the fiber size |{r in A_k:H(r)=y}| is binomial with expectation
+p^b/N. The multiplicative Chernoff bound and a union over all y
+give failure at most
+
+    8 N exp(-eta^2 p^36/(3N)).
+
+The node map has domain {0,1}^1024 and the same codomain. Its analogous
+balance failure is at most 2 N exp(-eta^2 N/3). Their sum is below
+e_load=2^-1024. Indeed p^36>2^1115, so the first exponential exponent
+exceeds 8192/3>2048, and the entire prefactor is below 2^516.
+
+On this event every output fiber has size between (1-eta)|A|/N and
+(1+eta)|A|/N. A uniform dummy leaf input conditioned on its digest and
+the complete physical oracle is uniform in that fiber. Its point mass
+is at most 2N/p^36.
+
+Conditional on H, disjoint dummy subtrees use independent leaf coins.
+Induction from the balanced leaf and node maps bounds every subtree
+root's point probabilities by (1+eta)^w/N and (1-eta)^w/N, where w is
+its vertex count. For all private trees, (1+eta)^v<2. This provides
+the fresh-root entropy used below.
+
+Conditioning additionally on the retained paths and their frontier
+labels preserves the leaf-input fiber bound for an unopened leaf.
+Its private dummy row affects the retained computation only through
+its leaf digest. All other dummy rows can be fixed when taking this
+conditional law. A full algebraic opening view and all honest field
+polynomials may also be fixed, because they depend on this dummy row
+only through the already fixed roots and retained labels.
+
+2. Exact full-forest refresh
+
+For an honest field tape, build a dummy physical tree with independent
+uniform field payloads and salts, and retain its actual H evaluations.
+Let r_i be its leaf inputs and y_i=H(r_i). Give the corresponding honest
+field row a fresh salt and call its encoded input x_i. Impose distinct,
+disjoint endpoints and preservation of earlier public pairs. Define
+
+    sigma_full = product_i (x_i r_i).
+
+The logical oracle H composed with sigma_full hashes each honest row
+to y_i. Node inputs and transcript inputs are unchanged, so the dummy
+authentication tree is also the honest logical authentication tree.
+
+The exact refresh identity is input-label invariance of a uniform random
+function. For two as-yet-unread input rows, exchange their full outputs
+and their input names. Both rows remain independent uniform rows.
+Apply this identity in the prover's causal order. A main word is fixed
+before its root, quotient and randomizer words before their roots, and
+each aggregate fold before its next root. The private dummy rows can
+therefore be read under physical H while honest rows use the exchanged
+logical names. Typed-domain separation fixes every node and transcript
+call. Endpoint and public-pair failures are charged below.
+
+For a compressed database with t entries, exchanging fresh endpoints
+changes its state only on bases containing either endpoint. A fresh
+actual salt bounds one membership probability by t/p^20. A fresh
+dummy row bounds the other by t/p^36. The norm difference is at most
+twice the square root of their sum. Summing these cold exchanges gives
+the prefix comparison for arbitrary quantum prefixes and classical
+adaptive requests. Fresh salts are drawn after the request is fixed.
+The comparison conditions on each request register and uses raw,
+unnormalized tapes, so it introduces no guard-conditioning denominator.
+
+3. Causal field views and native coins
+
+At request start mark I in J. Commit the dummy main root and derive
+alpha. Commit dummy quotient and randomizer roots and derive z. Sample
+the out-of-domain observations, derive gamma and sample the complete
+aggregate W. Commit each next dummy FRI root, derive its beta and fold
+W. Absorb the final polynomial and derive all native query positions.
+Sample the direct source rows conditioned on those observations and W.
+Install only their retained leaf exchanges and emit the native capsule.
+
+Use the causal sampler of masking.txt. Native alpha and z are derived
+after fresh independent dummy roots. The batching input contains the
+two main out-of-domain observations, whose mask evaluation space has
+at least eighty independent base-field coordinates. Each fold follows
+a fresh independent dummy FRI root. These inputs have conditional point
+mass at most 2/N, or p^-80 at the batching move, before the corresponding
+private native query.
+
+An absent-row compressed query differs from the ideal extension
+isometry by norm sqrt(2/N). Each next raw full-state output is uniform.
+The complete retained digest makes the next continuation input an
+injective function of that output. Against a t-entry database, a
+continuation's first old-input or self-return probability is at most
+(t+ell+1)/N. Keep all private outputs. Deleting the newly added rows
+recovers the initial database uniquely, so the estimate holds on an
+arbitrary coherent database state.
+
+Every field challenge consumes one full response. Its radix-p map differs
+from uniform on F_(p^8) by at most p^8/N in total variation. There are
+seven field challenges. The query sampler is simulated with its exact
+native subset distribution, so no uniform-subset approximation is used.
+
+For all N possible sealing digests, the probability that some digest
+has no successful witness among its first 2^24 candidates is at most
+N*(1-2^-12)^(2^24)<2^-5397. The candidate inputs are distinct reduced
+field encodings. Hence this single random-table event bounds every
+adaptive honest grind simultaneously. On its complement each constructor
+uses fewer than L=2^26 physical calls including both component calls, its forest and transcript.
+
+Fresh-response comparison and a union over those raw tapes give
+
+    b_coin(T)=(2^26+4096) sqrt(2^12*(T+v+256)/N)
+                +7 p^8/N.
+
+The output of the first passing witness has its grinding bits fixed and
+its other 500 bits uniformly distributed. Applying the same rank map
+preserves the native query distribution exactly. Failed trials remain
+charged calls. The global witness-prefix exception contributes 2^-5397.
+
+This couples the honest field messages to the independent-coin algebraic
+sampler. Its independent-coin algebraic exception per attempt is
+
+    delta_alg=p^-4+8192/p^8.
+
+4. Accessible-view pruning
+
+Retain only the leaf exchanges for positions in the emitted capsule.
+Duplicate positions reuse one exchange. Omitted actual endpoints have
+point mass at most p^-20 after fixing physical H, the complete field
+view, all honest field polynomials and the retained table. Omitted
+dummy endpoints have point mass at most 2N/p^36 by Section 1. Thus the
+changed support after deleting omitted exchanges has point bound
+
+    delta=n*(p^-20+2N/p^36).
+
+For a q-query reference circuit that uses the retained table, condition
+on physical H and its complete accessible view. Its query states contain
+no additional omitted-row data. The expected squared mass on the changed
+support is at most delta at every query. The ordinary oracle hybrid
+inequality consequently bounds its average state distance by
+2q sqrt(delta). This argument uses accessible query registers, rather
+than the constructor's database-membership event. It therefore applies
+even though the constructor has already read the private dummy rows.
+
+After pruning, the complete private field polynomials and unopened dummy
+rows can be erased. The retained rows have exactly the causal sampler's
+law. The functional simulator needs only public (Y,I), independent dummy
+forests, the causal field sampler and at most 448 input exchanges.
+
+5. Finite guards and adaptive theorem
+
+T charges every adversary, setup, constructor, component-projection and
+verifier-recheck call. In particular T>=v for a completed attempt and
+Sv<=T for S completed full-forest attempts. The following monotone
+envelope is evaluated at S<=floor(T/v)+1, allowing one final unfinished
+constructor on whole-experiment abort. For T>=v this also gives
+896*S<T. Every numerical term is monotone in S.
+
+Let
+
+    Phi(T)=64(T+v)^2/p^20 + 64(T+v)^2/N.
+
+This union covers endpoint aliases, earlier dictionary keys, preservation
+of public leaf-computation pairs and fresh root labels hitting earlier
+public digest targets. All counts are taken on raw tapes. There are fewer than
+2(T+v) earlier or proposed endpoints and fewer than v private vertices.
+Fresh salts give the p^-20 term. The balanced-label bound 2/N gives
+the digest term. Public preprocessing calls are included in T.
+
+The native simulator has event error bounded by
+
+    eps_sim(S,T) <= min(1,
+        S*delta_alg + 8ST sqrt(delta) + 4S Phi(T)
+        + S*b_coin(T) + 4S*e_load+2^-5397).
+
+Proof. Replace adaptive attempts in reverse order. Each replacement has
+a real prefix and an arbitrary continued experiment. Apply the exact
+refresh and cold-endpoint comparison, the native coin coupling and
+the algebraic sampler. Delete omitted exchanges with the accessible-view
+hybrid. For T>=v, the 8T sqrt(delta) term covers both the summed cold
+refresh and the 2T sqrt(delta) pruning cost with slack. Abort the whole
+simulation on a retained guard failure. Raw full-tape failure estimates
+cover the retained guard. Sum all errors, including the global balanced
+table event, over S. Later authorization responses use the composed
+retained input permutation, so the continuation is included in every
+replacement. The simulator is expected polynomial time and preserves
+the exact native transcript and all Merkle path checks.
+
+The reduction replaces private seeded generators by independent uniform
+coins before applying this theorem. Their joint pseudorandomness loss
+is the separate eps_rng term in authorization.txt.

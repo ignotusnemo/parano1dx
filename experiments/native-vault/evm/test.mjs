@@ -12,12 +12,14 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const option=(name,fallback)=>{const i=process.argv.indexOf(name);return i<0?fallback:process.argv[i+1];};
 const chainId=BigInt(option('--chain-id','8453'));
 const blockNumber=BigInt(option('--block-number','1'));
-const resultName=option('--result-name',chainId===8453n?'base':'evm');
+const groupSize=Number(option('--group-size','12'));
+if(!Number.isInteger(groupSize)||groupSize<1||groupSize>12)throw Error('Invalid query group size');
+const resultName=option('--result-name',chainId===8453n?'optimized-evm':'evm');
 if(!/^[a-z0-9_-]+$/.test(resultName))throw Error('Invalid result directory');
 const results=path.resolve(here,'../results',resultName);
 await mkdir(results,{recursive:true});
 const sources={};
-for(const name of ['VField.sol','VParameters.sol','VVerifier.sol','Parano1dVault.sol','Parano1dFactory.sol'])sources[name]={content:await readFile(path.join(here,name),'utf8')};
+for(const name of ['VField.sol','VParameters.sol','VSampler.sol','VVerifier.sol','Parano1dVault.sol','Parano1dFactory.sol'])sources[name]={content:await readFile(path.join(here,name),'utf8')};
 const compiled=JSON.parse(solc.compile(JSON.stringify({language:'Solidity',sources,settings:{
   optimizer:{enabled:true,runs:200},viaIR:true,evmVersion:'cancun',
   outputSelection:{'*':{'*':['abi','evm.bytecode.object','evm.deployedBytecode.object']}}
@@ -48,6 +50,7 @@ async function send(operation,to,data,value=0n,success=true,alternate=false){
   const sender=alternate?secondPayer:payer;const signingKey=alternate?secondKey:key;
   const account=await vm.stateManager.getAccount(sender);
   const tx=createLegacyTx({nonce:account.nonce,to,data:hexToBytes(data),value,gasLimit:16_777_216n,gasPrice:1n},{common}).sign(signingKey);
+  if(tx.serialize().length>131072)throw Error('Transaction exceeds the 128 KiB transport ceiling');
   const submitted=performance.now();
   const out=await runTx(vm,{tx,block});
   const ended=performance.now();
@@ -91,8 +94,9 @@ if((await vm.stateManager.getCode(vault.address)).length!==vault.bytes)throw Err
 await send('deposit_native_ETH',vault.address,'0x',10n**18n);
 const amount=250_000_000_000_000_000n,expiry=blockNumber+100000n;
 const [request]=await view(vault.address,vault.iface,'requestId',[recipient.toString(),amount,expiry]);
+const [context]=await view(vault.address,vault.iface,'requestContext',[recipient.toString(),amount,expiry]);
 const proofStarted=performance.now();
-execFileSync(prover,[results,request.slice(2),network],{stdio:'inherit'});
+execFileSync(prover,[results,request.slice(2),network,context.slice(2)],{stdio:'inherit'});
 const proverFixtureWallMs=performance.now()-proofStarted;
 metadata=JSON.parse(await readFile(path.join(results,'native-proof.json'),'utf8'));
 const expansionStarted=performance.now();
@@ -100,12 +104,14 @@ execFileSync('python3',[path.join(here,'prepare.py'),results],{stdio:'inherit',e
 const transportExpansionMs=performance.now()-expansionStarted;
 const f=JSON.parse(await readFile(path.join(results,'evm-fixture.json'),'utf8'));
 const b=f.base;
-const base=[b.evaluations,b.roots,b.finalPolynomial,b.outputs,b.outerInverses];
+const base=[b.evaluations,b.roots,b.finalPolynomial,b.outputs,b.outerInverses,b.queryPowWitness];
 const baseType=vault.iface.getFunction('authorize').inputs[3];
-const job=keccak256(AbiCoder.defaultAbiCoder().encode(['bytes32','bytes32'],[request,keccak256(AbiCoder.defaultAbiCoder().encode([baseType],[base]))]));
+const jobMessage=AbiCoder.defaultAbiCoder().encode(['bytes32','bytes32',baseType],[request,context,base]);
+const job='0x'+createHash('sha256').update(Buffer.from(jobMessage.slice(2),'hex')).digest('hex');
+const jobOther=keccak256(jobMessage);
 const recoveryEvents=[];
 const query=q=>[q.leaves,q.paths,q.inverses];
-const [challenges]=await view(checker.address,checker.iface,'transcript',[base,request]);
+const [challenges]=await view(checker.address,checker.iface,'transcript',[base,request,context]);
 const refs=f.reference;
 for(const name of ['alpha','zeta','pcsAlpha'])if(challenges[name]!==BigInt(refs[name]))throw Error('transcript '+name);
 if(challenges.betas.some((x,i)=>x!==BigInt(refs.betas[i]))||challenges.indices.some((x,i)=>x!==BigInt(refs.indices[i])))throw Error('transcript arrays');
@@ -116,9 +122,11 @@ const checkUnchanged=async()=>{const now=await snapshot();if(now.some((x,i)=>x!=
 let cacheBytes='0x';
 const auth=(a,qs,who=recipient.toString(),cache=cacheBytes)=>vault.iface.encodeFunctionData('authorize',[who,a,expiry,base,qs,cache]);
 await send('changed_amount_rejected',vault.address,auth(amount+1n,[]),0n,false);await checkUnchanged();
+const invalidGrindingBase=[...base];invalidGrindingBase[5]=f.invalid_query_pow_witness;
+await send('invalid_query_grinding_rejected',vault.address,vault.iface.encodeFunctionData('authorize',
+  [recipient.toString(),amount,expiry,invalidGrindingBase,[],'0x']),0n,false);await checkUnchanged();
 await send('begin_authorization',vault.address,auth(amount,[]));await checkUnchanged();
-await send('prepare_query_cache',vault.address,auth(amount,[]));await checkUnchanged();
-const [cache]=await view(checker.address,checker.iface,'prepareCache',[base,request]);
+const [cache]=await view(checker.address,checker.iface,'prepareCache',[base,request,context]);
 const cacheType=checker.iface.getFunction('prepareCache').outputs[0];
 cacheBytes=AbiCoder.defaultAbiCoder().encode([cacheType],[cache]);
 const corruptCache='0x'+(BigInt('0x'+cacheBytes.slice(2,66))^1n).toString(16).padStart(64,'0')+cacheBytes.slice(66);
@@ -127,21 +135,21 @@ const bad=structuredClone(f.queries[0]);const altered=Buffer.from(bad.leaves[0].
 await send('altered_proof_rejected',vault.address,auth(amount,[query(bad)]),0n,false);await checkUnchanged();
 const wrong=f.queries.find((_,i)=>refs.indices[i]!==refs.indices[0]);
 await send('query_skip_rejected',vault.address,auth(amount,[query(wrong)]),0n,false);await checkUnchanged();
-for(let start=0;start<64;start+=8){
-  if(start===16){
-    const [progress]=await view(vault.address,vault.iface,'progress',[job]);
-    if(progress!==BigInt(start+2))throw Error('Relayer recovery progress');
-    const [recoveredCache]=await view(checker.address,checker.iface,'prepareCache',[base,request]);
+for(let start=0;start<64;start+=groupSize){
+  if(start===2*groupSize){
+    const [progress]=await view(vault.address,vault.iface,'progress',[job,jobOther]);
+    if(progress!==BigInt(start+1))throw Error('Relayer recovery progress');
+    const [recoveredCache]=await view(checker.address,checker.iface,'prepareCache',[base,request,context]);
     const recoveredBytes=AbiCoder.defaultAbiCoder().encode([cacheType],[recoveredCache]);
     if(recoveredBytes!==cacheBytes)throw Error('Relayer recovery cache');
-    const [storedHash]=await view(vault.address,vault.iface,'cacheHashes',[job]);
+    const [storedHash]=await view(vault.address,vault.iface,'cacheHashes',[job,jobOther]);
     if(storedHash!==keccak256(recoveredBytes))throw Error('Relayer recovery authenticated cache');
     cacheBytes=recoveredBytes;
     recoveryEvents.push({case:'restart_after_lost_batch_response',accepted_queries:start,
       cache_reconstructed_from_public_proof:true});
   }
-  await send(start+8===64?'verify_and_withdraw':'verify_query_batch',vault.address,auth(amount,f.queries.slice(start,start+8).map(query)),0n,true,start%16===8);
-  if(start+8<64)await checkUnchanged();
+  await send(start+groupSize>=64?'verify_and_withdraw':'verify_query_batch',vault.address,auth(amount,f.queries.slice(start,start+groupSize).map(query)),0n,true,(start/groupSize)%2===1);
+  if(start+groupSize<64)await checkUnchanged();
 }
 const after=await snapshot();
 if(after[0]!==before[0]-amount||after[1]!==before[1]+amount||after[2]!==1n)throw Error('payout mismatch');
@@ -153,7 +161,9 @@ const summary={runtime:'@ethereumjs/vm 10.0.0',hardfork:'Prague',compiler:solc.v
   gas_limit_per_transaction:16777216,code_size_limit:24576,verifier_code_bytes:checker.bytes,vault_code_bytes:vault.bytes,
   full_signed_transactions:true,positive_lifecycle_completed:true,native_transcript_matches:true,CREATE2_recovery_verified:true,independent_relayers_checked:true,
   altered_proof_rejected:true,altered_cache_rejected:true,query_skip_rejected:true,changed_amount_rejected:true,changed_recipient_rejected:true,replay_rejected:true,
+  invalid_query_grinding_rejected:true,
   withdrawal_wei:amount.toString(),authorization_transactions:successful.length,
+  query_batch_size:groupSize,
   authorization_gas:successful.reduce((s,r)=>s+r.gas,0),maximum_authorization_transaction_gas:Math.max(...successful.map(r=>r.gas)),
   local_positive_transaction_wall_ms:successful.reduce((s,r)=>s+r.local_transaction_wall_ms,0),
   local_vm_submit_ms:successful.reduce((s,r)=>s+r.local_vm_submit_ms,0),

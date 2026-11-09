@@ -1,0 +1,15 @@
+{
+  "cpu_model": "Intel Core i7-1365U",
+  "memory_total": "32507748 kB",
+  "system": "Linux",
+  "kernel": "7.0.0-38-generic",
+  "architecture": "x86_64",
+  "build_profile": {
+    "opt_level": 3,
+    "lto": "thin",
+    "codegen_units": 1
+  },
+  "scope": "Measurements on the development host. Background load and temperature were not held fixed.",
+  "device": "laptop",
+  "parallel_backend_enabled": true
+}

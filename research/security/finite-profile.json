@@ -1,0 +1,109 @@
+{
+  "scope": "finite parameters and polynomial-mask transport",
+  "fixed_public_hash_rows": 1,
+  "public_capacity_seed_input": "Parano1dX/v1/authority/koalabear24/r8p26",
+  "public_capacity_seed_digest": "487dbd2a700c5483fdef4b63c346e1e1f58d05af8a42a26021fefa05430b77d15bae21ce064421c0493911ec5b6bd20c7f197fd450e037cbe48ee809b7e7100b",
+  "public_seed_capacity_matches_native_air": true,
+  "base_prime": 2130706433,
+  "extension_degree": 8,
+  "extension_size": "424804331891979973455971894938199991873140910988886521584080257519598960641",
+  "merkle_salt_words": 20,
+  "query_grinding_bits": 12,
+  "poseidon_full_rounds": 8,
+  "poseidon_partial_rounds": 26,
+  "extension_irreducible": true,
+  "cube_bijective": true,
+  "base_primality": "Proth certificate, base 3",
+  "linear_layer_ranks": {
+    "external": 24,
+    "internal": 24
+  },
+  "internal_diagonal_distinct_nonzero": true,
+  "internal_observability_powers_checked": 96,
+  "internal_observability_minimum_rank": 24,
+  "external_base_block_nonzero_minors": 69,
+  "proper_subfield_size": "20610781933055814402734644169665413121",
+  "rotation_order": 64,
+  "nonzero_rotation_frobenius_orbits_disjoint": true,
+  "main_disclosure_coordinates": 144,
+  "runtime_hiding_budget": 80,
+  "main_mask_coordinates": 192,
+  "quotient_disclosure_coordinates": 72,
+  "randomizer_remaining_extension_coefficients": 184,
+  "private_merkle_leaf_positions": 13648,
+  "private_leaf_field_word_domains": [
+    36,
+    52,
+    68,
+    288
+  ],
+  "minimum_dummy_leaf_field_words": 36,
+  "private_merkle_internal_nodes": 13641,
+  "disclosed_private_leaf_positions_at_most": 448,
+  "mask_transport_exception": {
+    "numerator": "20610781933055814402734644169665421313",
+    "denominator": "424804331891979973455971894938199991873140910988886521584080257519598960641",
+    "negative_log2": 123.95473874979704
+  },
+  "query_phase_error_upper": {
+    "numerator": "1237533984830511280745549027279732658949482781285176336421744726835655674235",
+    "denominator": "13246912400220659106659566178733834313608516587055436508776784228241455779498732668088773933199355147696443739054422304",
+    "negative_log2": 142.94109606998143
+  },
+  "query_sampling": "uniform 64-element subset without replacement",
+  "agreement_upper": "7/32",
+  "agreement_scope": "Finite first-order certificate in rs-certificate.json",
+  "layers": [
+    {
+      "domain": 4096,
+      "dimension": 256,
+      "fold_arity": 4
+    },
+    {
+      "domain": 1024,
+      "dimension": 64,
+      "fold_arity": 4
+    },
+    {
+      "domain": 256,
+      "dimension": 16,
+      "fold_arity": 4
+    },
+    {
+      "domain": 64,
+      "dimension": 4,
+      "fold_arity": 4
+    }
+  ],
+  "derivation_distribution": {
+    "heavy_residues": 33554430,
+    "heavy_probability": "3/4294967296",
+    "other_probability": "2/4294967296",
+    "total_variation_from_uniform_one_word": {
+      "numerator": "35184370042011645",
+      "denominator": "4575657223555907584",
+      "negative_log2": 7.022900486714711
+    }
+  },
+  "source_sha256": {
+    "experiments/native-vault/auth/src/lib.rs": "9a7f8854d21dc6194be90fcb5c9273025f992a925b4b9df7c9c039f7e8c7c823",
+    "experiments/native-vault/auth/src/sampler.rs": "810b6a2267775c6dd399ced95e73b4d6ea2c7033a16aeae92b2315875cace0db",
+    "experiments/native-vault/auth/src/stream.rs": "e64e415ca6f9f6d3e8e842fd7ccb7be029a6bdbfe3ceffad5cc30ad429206c03",
+    "experiments/native-vault/auth/src/stream_parameters.rs": "268e0b26f308edd80f7cfd7c952fc59e69486815a93bc866d47df8eb5dbb1be6",
+    "experiments/native-vault/prover/src/main.rs": "da586ee568f7f074b8544f3f2e1aaeae047d73a3b23e3705f70923e46f1b1152",
+    "experiments/native-vault/evm/Parano1dVault.sol": "67220d789fadb0beccb9a1af17ac6660e0adab7c3e350bfaa4c64e32351fdd63",
+    "experiments/native-vault/evm/VVerifier.sol": "05c06651f8596659849036f16a5056af3a429ebae3e86b48f60f36cefff0d9ba",
+    "experiments/native-vault/solana/src/lib.rs": "65605e4874178a8e5e3983bc25983ad5202b8113e5057a3233a78f6f5ef988ba",
+    "experiments/native-vault/vendor/p3-fri/src/hiding_pcs.rs": "f3b757e94eea4b7cdfeaad3fe3670eb6dd1df2a004fcb49a0b999ad62b855023",
+    "experiments/native-vault/results/optimized-evm/evm-export.json": "42d4632b6f49be69c8fd4b55f33601b0608b21759d378d3a5b291d273db6d9a6",
+    "experiments/native-vault/auth/src/poseidon_constants.rs": "0209f8e527161809516e257a269bbeab03e9b016eeca455f09e346b4294dc427",
+    "experiments/native-vault/prover/src/export.rs": "c131cce39b985849a14ed182745748e76041f403f8120a5fe2468433a037bc2d",
+    "experiments/native-vault/evm/VField.sol": "3a6f81a86651b4d2909fd029d9e945d0d0449d256fedce296c0d27f8b61e4859",
+    "experiments/native-vault/evm/VParameters.sol": "17faadfc99c89ba8c8b616f590157e67b21404fe1cf416d4061bc3d04e7fa329",
+    "experiments/native-vault/evm/prepare.py": "2128bf985763026d21f7c3d84248af22460537b592f290299f97a728a73e136c",
+    "experiments/native-vault/auth/build.rs": "8ea8bb52789d431602330b4936639e0559da599940a2358be9ef12ca173ed1d7",
+    "experiments/native-vault/prover/src/bin/security-profile.rs": "42717fe4f309809cf95fb872ff402461c2fd7add70f7fa690dbd89ffea3e6110",
+    "research/security/rs-certificate.json": "3045cc8ba9b319f0908bb8e285f785a0f51da7d75a2b3cad652c7f8bd1a8d655"
+  },
+  "quantum_authorization_certificate": "native QROM theorem: SECURITY.html and research/security/security-evaluation.json"
+}

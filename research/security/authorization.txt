@@ -1,0 +1,96 @@
+Native-asset authorization theorem
+9 November 2026
+
+A canonical request is authorized by knowledge of a reusable authority
+secret. Its proof binds the request to the deployed vault, parameters,
+recipient, amount, nonce and expiry. The proof checker uses KoalaBear,
+a degree-eight extension, a 4096-position domain and 64 FRI checks.
+
+1. Authority relation and public instance
+
+The secret has fourteen elements of F_p. Poseidon2 has width 24, ten
+fixed capacity elements, a cubic S-box, eight full rounds and 26 partial
+rounds. Its first twelve output elements are Y. The installed authority
+is C=SHA256(AUTH_DOMAIN||encode(Y)). Field and integer encodings are
+canonical. The exact fixed capacity and constants are source-linked.
+
+For the security game, Y is supplied as public auxiliary input at setup.
+It is the same information carried by an honest authorization capsule.
+The adversary receives the installed C, parameters and this Y. It may
+request classical authorizations adaptively and query the two public
+hash components coherently.
+
+The authority-preimage game gives this same public instance. It accepts
+any secret whose computed output Y' has commitment C. This definition
+covers both the fixed Poseidon2 preimage and a substitute output mapping
+to the installed commitment. The secret distribution is the protocol's
+actual HKDF and reduction distribution.
+
+2. Fresh-request game and host policy
+
+Let I=SHA256(M)||Keccak256(M) for the canonical request M. The requested
+set J records I before any response is constructed. A forgery is a value
+release for I outside J. Observed responses may be chosen adaptively.
+The host checks the installed verifier, authority, parameter manifest,
+recipient, available value, expiry and current nonce. It protects all
+persistent verification state and consumes the nonce before transfer.
+The network execution and host history are authenticated.
+
+Repeated submission of an already authorized request is governed by its
+nonce. The cryptographic game and the host policy apply to the same
+canonical request. The application may expose this authorization
+interface outside a blockchain whenever it supplies the same policy
+checks and authenticated execution.
+
+3. Native reduction
+
+The joint HKDF and private-generator hybrids contribute eps_der and
+eps_rng. The witness-free simulator then supplies adaptive responses
+with event error eps_sim(S,T), using the actual native transcript and
+one retained permutation of private leaf inputs. Its field masks and
+source words are simulated from public Y and I.
+
+The source extractor and the protected-response compiler establish
+
+    Pr[ReleaseForge] <= Adv_pre(B)+eps_der+eps_rng+L(G,D,S,T).
+
+Here L is the exact expression in compiler.txt. The same simulated
+experiment supplies both the simulator and the final extractor. Every
+component, constructor, setup and final-pair call is counted in T.
+
+B has the original adversary's quantum execution followed by one
+compressed-database measurement. It enumerates at most T rooted
+prefixes. Each source reconstruction uses the deterministic first-order
+DKT26 decoder at the finite parameters in rs-certificate.json, checks
+all returned source candidates on the 128-point AIR domain and validates
+any recovered authority secret against C. The full classical decoding
+and candidate-validation work is included in Adv_pre(B). The primitive
+condition is stated for this complete B, including that work.
+
+4. Category 1 corollary
+
+For at most 2^64 classical authorizations, reference gate-depth GD=2^170
+and depths D in {2^40,2^64,2^96}, impose the exact batch resource
+condition of resource-contract.txt: c_j>=2^20. Every adversarial
+call is conservatively charged one logical gate. The
+reproducible complete ideal proof-loss envelope is at most
+0.325523273624783. At 2^143 classical gates it is at most
+0.000254315057964 even charging one unit per hash call.
+
+Consequently the full authorization game has success below one half
+at both Category 1 references whenever
+
+    Adv_pre(B)+eps_der+eps_rng < 0.174476726375217.
+
+This gives the NIST Category 1 corollary under the displayed primitive,
+resource and host conditions. Its dominant ideal gate-depth half-success
+floor is approximately 2^170.619167401. The complete finite terms are
+included in the reference-budget bound, rather than omitted from that
+floor's interpretation.
+
+The finite proof, its native response geometry and both host verifiers
+are linked by the reproduction checks in this directory. The completed
+assessment in nist-resource-assessment.txt supplies concrete resource
+evidence from published and native fixed-prefix circuits. It states the
+evaluated call family and the broader batch-cost and primitive conditions
+for applying this corollary to a chosen adversary circuit model.

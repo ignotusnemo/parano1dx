@@ -1,0 +1,31 @@
+{
+  "article": {
+    "title": "Post-Quantum Authorization for Native-Asset Vaults",
+    "url": "https://lab.parano1d.org/research/native-asset-vaults/",
+    "published_date": "2026-11-08",
+    "table": "Complete withdrawals on Base and Solana"
+  },
+  "scope": "Published signed-local-withdrawal table and wallet CPU samples. Public-network delivery times have their own records.",
+  "wallet": {
+    "base_proving_ms": 53.03,
+    "solana_proving_ms": 54.39,
+    "statistic": "One published sample per harness",
+    "cpu_model": "Intel Core i7-1365U"
+  },
+  "evm": {
+    "authorization_transactions": 10,
+    "authorization_gas": 103890467
+  },
+  "solana": {
+    "authorization_transactions": 87,
+    "verification_transactions": 14,
+    "maximum_verification_transaction_CU": 1140062
+  },
+  "evidence_sha256": {
+    "papers/native-asset-vaults.pdf": "47ba4d7241b7f688084d2af96b3b45e63c207bd0660cf034a1438e9d8c45a0e1",
+    "experiments/native-vault/results/base/native-proof.json": "e1046717c1e6a5cee749b320e98970d2bbb1b5c646256e4533e9a5f1617c4a99",
+    "experiments/native-vault/results/solana-current-local/native-proof.json": "8acbf61a360579a56a8f1efac3dcb6d3ab550f9d5c6b95f0621db716b395f8ed",
+    "experiments/native-vault/results/base/evm-vault.json": "bff411c351e5afa580b095d7deaa5336fe2ceae1a704a8fb31ec714523545341",
+    "experiments/native-vault/results/solana-current-local/solana-vault.json": "f608598c2a9aa12ad004042d4fa364d130a93d914fab9e073045e8d33629f9f8"
+  }
+}

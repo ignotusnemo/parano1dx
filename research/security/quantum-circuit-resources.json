@@ -1,0 +1,754 @@
+{
+  "title": "Published quantum SHA-256 and Keccak circuit resource assessment",
+  "date": "2026-11-09",
+  "scope": "primary literature and exact arithmetic, native circuit synthesis recorded separately",
+  "result": "Published generic circuits calibrate the declared resource hypothesis. Application to native fixed-prefix and projected-output batches requires specialized costing.",
+  "context": {
+    "gate_depth_budget_bits": 170,
+    "selected_batch_price": 1048576,
+    "minimum_sufficient_price_for_complete_ideal_bound_below_half": "682672",
+    "complete_ideal_success_envelope_at_selected_price": 0.325523273624783,
+    "source_density_negative_log2": {
+      "query_group_density": 154.94109606926583,
+      "field_density": 176.20343729420085,
+      "combined_source_density": 154.94109549571493
+    },
+    "conservative_hybrid_model": "grant all 512 SHA256||Keccak256 output bits for the cheaper component cost",
+    "batch_condition": "For every batch s, sum_j k_sj*c_j <= A_s*delta_s, with c_j >= 2^20 in a fixed elementary logical gate library",
+    "premise_status": "engineering resource condition requiring native specialized and batch assessment",
+    "theorem_status": "conditional on the explicit resource and primitive conditions",
+    "inputs": [
+      {
+        "path": "research/security/transcript-profile.json",
+        "sha256": "f93eea3611580c54109ca311f844b0f14adf64066fc11fa1b4ea1191222ecbfc"
+      },
+      {
+        "path": "research/security/resource-contract.txt",
+        "sha256": "81665e445a408c33b5e87c60858e532228790d16db989f4a18cdc5b263a810cf"
+      },
+      {
+        "path": "research/security/security-evaluation.json",
+        "sha256": "d9c61d985e79cd897ec831e8c486697252c48257504b9610b5f72c4e71d2443b"
+      }
+    ]
+  },
+  "metric_definitions": {
+    "full_gate_count": "sum of gates in the explicitly listed logical gate library",
+    "full_depth": "longest scheduled gate path in that same library",
+    "T_depth": "number of sequential non-Clifford T layers with Clifford operations omitted from that metric",
+    "T_only_accounting_product": "T_count*T_depth for that implementation, partial accounting relative to its full Clifford+T gate-depth product",
+    "universal_minimum": "not inferred from any construction cost",
+    "width": "logical qubits, distinct from gate count, full depth, surface-code cycles or physical-qubit-time"
+  },
+  "native_block_counts": [
+    {
+      "input_bytes": 623,
+      "SHA256_blocks": 10,
+      "Keccak256_rate_blocks": 5
+    },
+    {
+      "input_bytes": 192,
+      "SHA256_blocks": 4,
+      "Keccak256_rate_blocks": 2
+    },
+    {
+      "input_bytes": 9036,
+      "SHA256_blocks": 142,
+      "Keccak256_rate_blocks": 67
+    },
+    {
+      "input_bytes": 364,
+      "SHA256_blocks": 6,
+      "Keccak256_rate_blocks": 3
+    },
+    {
+      "input_bytes": 128,
+      "SHA256_blocks": 3,
+      "Keccak256_rate_blocks": 1
+    },
+    {
+      "input_bytes": 128,
+      "SHA256_blocks": 3,
+      "Keccak256_rate_blocks": 1
+    },
+    {
+      "input_bytes": 128,
+      "SHA256_blocks": 3,
+      "Keccak256_rate_blocks": 1
+    },
+    {
+      "input_bytes": 96,
+      "SHA256_blocks": 2,
+      "Keccak256_rate_blocks": 1
+    },
+    {
+      "input_bytes": 68,
+      "SHA256_blocks": 2,
+      "Keccak256_rate_blocks": 1
+    }
+  ],
+  "native_minimum_query": {
+    "input_bytes": 68,
+    "shape": "fixed seal512 || encoded nonce32",
+    "base_prime": 2130706433,
+    "canonical_nonce_domain_bits": 30.98868468744926,
+    "SHA256_blocks_before_prefix_reuse": 2,
+    "SHA256_online_blocks_after_classical_fixed_prefix_reuse": 1,
+    "SHA256_second_block_words": "W0 = nonce bytes interpreted with SHA endianness, W1 = 0x80000000, W2 through W14 = 0, W15 = 544",
+    "Keccak256_blocks": 1,
+    "Keccak256_state_bits": 1600,
+    "Keccak256_rate_bits": 1088,
+    "Keccak256_suffix_hex": "01",
+    "SHA3_256_suffix_hex": "06",
+    "fixed_prefix_scope": "per classical transcript, not automatically reusable across a coherent superposition of transcripts",
+    "partial_output_scope": "copy only requested bits and prune unused output cones before compiling"
+  },
+  "circuits": [
+    {
+      "id": "amy_sha256",
+      "source": "amy2016",
+      "function": "SHA-256",
+      "width_logical_qubits": 2402,
+      "T_count": 401584,
+      "T_depth": 171552,
+      "full_depth": 528768,
+      "gate_counts": {
+        "X": 0,
+        "P_or_Pdagger": 0,
+        "Z": 0,
+        "H": 114368,
+        "T_or_Tdagger": 401584,
+        "CNOT": 534272
+      },
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one generic 512-bit compression core, 64 rounds and 48 schedule iterations",
+      "padding_and_native_constant_propagation_costed": false,
+      "digest_feedforward_requires_explicit_handling": true,
+      "measurement_assisted": false,
+      "full_gate_count": 1050224,
+      "full_gate_depth_product": 555324844032,
+      "full_gate_depth_log2": 39.01454098418909,
+      "T_only_accounting_product": 68892538368,
+      "T_only_product_log2": 36.00362868445306,
+      "T_only_product_over_selected_price": {
+        "numerator": 134555739,
+        "denominator": 2048,
+        "decimal": 65701.04443359375
+      }
+    },
+    {
+      "id": "amy_sha256_Toptimized",
+      "source": "amy2016",
+      "function": "SHA-256",
+      "width_logical_qubits": 2402,
+      "T_count": 228992,
+      "T_depth": 70400,
+      "full_depth": 830720,
+      "gate_counts": {
+        "X": 0,
+        "P_or_Pdagger": 72976,
+        "Z": 6144,
+        "H": 94144,
+        "T_or_Tdagger": 228992,
+        "CNOT": 4209072
+      },
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one generic 512-bit compression core, 64 rounds and 48 schedule iterations",
+      "padding_and_native_constant_propagation_costed": false,
+      "digest_feedforward_requires_explicit_handling": true,
+      "measurement_assisted": false,
+      "full_gate_count": 4611328,
+      "full_gate_depth_product": 3830722396160,
+      "full_gate_depth_log2": 41.80075361933196,
+      "T_only_accounting_product": 16121036800,
+      "T_only_product_log2": 33.90822548046393,
+      "T_only_product_over_selected_price": {
+        "numerator": 491975,
+        "denominator": 32,
+        "decimal": 15374.21875
+      }
+    },
+    {
+      "id": "amy_keccak",
+      "source": "amy2016",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 3200,
+      "T_count": 591360,
+      "T_depth": 792,
+      "full_depth": 10128,
+      "gate_counts": {
+        "X": 85,
+        "P_or_Pdagger": 0,
+        "Z": 0,
+        "H": 168960,
+        "T_or_Tdagger": 591360,
+        "CNOT": 33269760
+      },
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "Toffoli_count": 84480,
+      "Toffoli_depth": 264,
+      "scope": "one full generic Keccak-f[1600] permutation, 24 rounds, one padded rate block",
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false,
+      "full_gate_count": 34030165,
+      "full_gate_depth_product": 344657511120,
+      "full_gate_depth_log2": 38.326372500067826,
+      "T_only_accounting_product": 468357120,
+      "T_only_product_log2": 28.80303375638303,
+      "T_only_product_over_selected_price": {
+        "numerator": 114345,
+        "denominator": 256,
+        "decimal": 446.66015625
+      }
+    },
+    {
+      "id": "amy_keccak_Toptimized",
+      "source": "amy2016",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 3200,
+      "T_count": 499200,
+      "T_depth": 432,
+      "full_depth": 11040,
+      "gate_counts": {
+        "X": 85,
+        "P_or_Pdagger": 46080,
+        "Z": 0,
+        "H": 168960,
+        "T_or_Tdagger": 499200,
+        "CNOT": 34260480
+      },
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one full generic Keccak-f[1600] permutation, 24 rounds, one padded rate block",
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false,
+      "full_gate_count": 34974805,
+      "full_gate_depth_product": 386121847200,
+      "full_gate_depth_log2": 38.490265229626864,
+      "T_only_accounting_product": 215654400,
+      "T_only_product_log2": 27.684145910800442,
+      "T_only_product_over_selected_price": {
+        "numerator": 26325,
+        "denominator": 128,
+        "decimal": 205.6640625
+      }
+    },
+    {
+      "id": "hs_keccak",
+      "source": "haener_soeken",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 46400,
+      "T_count": 153600,
+      "T_depth": 24,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "generic full permutation network, 38400 AND nodes and AND-depth 24",
+      "AND_count": 38400,
+      "AND_depth": 24,
+      "measurement_assisted": true,
+      "clean_XOR_mapping": "4 T per AND including zero-T measured uncomputation, output copying is Clifford",
+      "full_depth_not_reported": true,
+      "native_constant_propagation_costed": false,
+      "T_only_accounting_product": 3686400,
+      "T_only_product_log2": 21.813781191217036,
+      "T_only_product_over_selected_price": {
+        "numerator": 225,
+        "denominator": 64,
+        "decimal": 3.515625
+      }
+    },
+    {
+      "id": "hs_sha256_smallwidth",
+      "source": "haener_soeken",
+      "function": "SHA-256",
+      "width_logical_qubits": 23684,
+      "T_count": 90292,
+      "T_depth": 1607,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "generic SHA-256 logic network",
+      "AND_count": 22573,
+      "AND_depth": 1607,
+      "measurement_assisted": true,
+      "full_depth_not_reported": true,
+      "native_constant_propagation_costed": false,
+      "T_only_accounting_product": 145099244,
+      "T_only_product_log2": 27.11246476175447,
+      "T_only_product_over_selected_price": {
+        "numerator": 36274811,
+        "denominator": 262144,
+        "decimal": 138.37742233276367
+      }
+    },
+    {
+      "id": "hs_sha256_smallTdepth",
+      "source": "haener_soeken",
+      "function": "SHA-256",
+      "width_logical_qubits": 458974,
+      "T_count": 1801788,
+      "T_depth": 1519,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "generic SHA-256 logic network",
+      "AND_count": 450447,
+      "AND_depth": 1519,
+      "measurement_assisted": true,
+      "full_depth_not_reported": true,
+      "native_constant_propagation_costed": false,
+      "T_only_accounting_product": 2736915972,
+      "T_only_product_log2": 31.34990399616454,
+      "T_only_product_over_selected_price": {
+        "numerator": 684228993,
+        "denominator": 262144,
+        "decimal": 2610.1264686584473
+      }
+    },
+    {
+      "id": "lee_sha256_Z1",
+      "source": "lee_sha2_2022",
+      "function": "SHA-256",
+      "width_logical_qubits": 768,
+      "T_count": null,
+      "T_depth": 43510,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "Toffoli_depth": 32895,
+      "scope": "generic one-block round and message-schedule circuit, final constant feed-forward omitted for Grover comparison",
+      "counts_not_reported": true,
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false
+    },
+    {
+      "id": "lee_sha256_Z2",
+      "source": "lee_sha2_2022",
+      "function": "SHA-256",
+      "width_logical_qubits": 797,
+      "T_count": null,
+      "T_depth": 16055,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "Toffoli_depth": 12023,
+      "scope": "generic one-block round and message-schedule circuit, final constant feed-forward omitted for Grover comparison",
+      "counts_not_reported": true,
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false
+    },
+    {
+      "id": "lee_sha256_Z3",
+      "source": "lee_sha2_2022",
+      "function": "SHA-256",
+      "width_logical_qubits": 927,
+      "T_count": null,
+      "T_depth": 7304,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "Toffoli_depth": 6914,
+      "scope": "generic one-block round and message-schedule circuit, final constant feed-forward omitted for Grover comparison",
+      "counts_not_reported": true,
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false
+    },
+    {
+      "id": "lee_sha256_Z4",
+      "source": "lee_sha2_2022",
+      "function": "SHA-256",
+      "width_logical_qubits": 962,
+      "T_count": null,
+      "T_depth": 4936,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "Toffoli_depth": 4418,
+      "scope": "generic one-block round and message-schedule circuit, final constant feed-forward omitted for Grover comparison",
+      "counts_not_reported": true,
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false
+    },
+    {
+      "id": "lee_keccak_Z1",
+      "source": "lee_sha3_2024",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 1600,
+      "T_count": 284160,
+      "T_depth": 264,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one full generic in-place permutation, 24 rounds, one padded rate block",
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false,
+      "full_depth_not_reported": true,
+      "Toffoli_count": 53760,
+      "Toffoli_depth": 168,
+      "unitary_compute_copy_uncompute_T_count": 568320,
+      "unitary_compute_copy_uncompute_T_depth": 528,
+      "unitary_compute_copy_uncompute_T_product": 300072960,
+      "T_only_accounting_product": 75018240,
+      "T_only_product_log2": 26.160738080595923,
+      "T_only_product_over_selected_price": {
+        "numerator": 18315,
+        "denominator": 256,
+        "decimal": 71.54296875
+      }
+    },
+    {
+      "id": "lee_keccak_Z2",
+      "source": "lee_sha3_2024",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 2240,
+      "T_count": 330240,
+      "T_depth": 216,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one full generic in-place permutation, 24 rounds, one padded rate block",
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false,
+      "full_depth_not_reported": true,
+      "Toffoli_count": 53760,
+      "Toffoli_depth": 144,
+      "unitary_compute_copy_uncompute_T_count": 660480,
+      "unitary_compute_copy_uncompute_T_depth": 432,
+      "unitary_compute_copy_uncompute_T_product": 285327360,
+      "T_only_accounting_product": 71331840,
+      "T_only_product_log2": 26.088042852474086,
+      "T_only_product_over_selected_price": {
+        "numerator": 17415,
+        "denominator": 256,
+        "decimal": 68.02734375
+      }
+    },
+    {
+      "id": "lee_keccak_Z3",
+      "source": "lee_sha3_2024",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 4800,
+      "T_count": 844800,
+      "T_depth": 192,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one full generic in-place permutation, 24 rounds, one padded rate block",
+      "measurement_assisted": false,
+      "native_constant_propagation_costed": false,
+      "full_depth_not_reported": true,
+      "Toffoli_count": 153600,
+      "Toffoli_depth": 96,
+      "unitary_compute_copy_uncompute_T_count": 1689600,
+      "unitary_compute_copy_uncompute_T_depth": 384,
+      "unitary_compute_copy_uncompute_T_product": 648806400,
+      "T_only_accounting_product": 162201600,
+      "T_only_product_log2": 27.273212809854336,
+      "T_only_product_over_selected_price": {
+        "numerator": 2475,
+        "denominator": 16,
+        "decimal": 154.6875
+      }
+    },
+    {
+      "id": "lee_keccak_Z4",
+      "source": "lee_sha3_2024",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 2240,
+      "T_count": 268800,
+      "T_depth": 192,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one full generic in-place permutation, 24 rounds, one padded rate block",
+      "measurement_assisted": true,
+      "native_constant_propagation_costed": false,
+      "full_depth_not_reported": true,
+      "combined_Toffoli_AND_count": 53760,
+      "combined_Toffoli_AND_depth": 144,
+      "T_only_accounting_product": 51609600,
+      "T_only_product_log2": 25.62113611327464,
+      "T_only_product_over_selected_price": {
+        "numerator": 1575,
+        "denominator": 32,
+        "decimal": 49.21875
+      }
+    },
+    {
+      "id": "lee_keccak_Z5",
+      "source": "lee_sha3_2024",
+      "function": "Keccak-f[1600]",
+      "width_logical_qubits": 4800,
+      "T_count": 614400,
+      "T_depth": 144,
+      "full_depth": null,
+      "gate_counts": null,
+      "cost_role": "cost of the cited construction",
+      "native_batch_minimum_established": false,
+      "scope": "one full generic in-place permutation, 24 rounds, one padded rate block",
+      "measurement_assisted": true,
+      "native_constant_propagation_costed": false,
+      "full_depth_not_reported": true,
+      "combined_Toffoli_AND_count": 153600,
+      "combined_Toffoli_AND_depth": 96,
+      "T_only_accounting_product": 88473600,
+      "T_only_product_log2": 26.398743691938193,
+      "T_only_product_over_selected_price": {
+        "numerator": 675,
+        "denominator": 8,
+        "decimal": 84.375
+      }
+    }
+  ],
+  "clean_oracle_conversions": {
+    "unitary_compute_copy_uncompute": {
+      "premise": "U preserves the original query and computes the exact requested function into workspace",
+      "output_bits": "q",
+      "gate_count": "2*g + q",
+      "full_depth": "2*d + 1",
+      "T_count": "2*t",
+      "T_depth": "2*t_depth",
+      "additional_costs": "input duplication, state preparation and digest feed-forward if absent from U"
+    },
+    "measurement_assisted_logic_network": {
+      "source": "meuli2019",
+      "oracle": "|x>|y>|0^k> -> |x>|y XOR f(x)>|0^k>",
+      "T_upper_count": "4 * AND_count",
+      "AND_compute_T": 4,
+      "AND_uncompute_T": 0,
+      "full_depth_obligations": [
+        "CNOT fanout and output copy",
+        "measurement",
+        "classical feed-forward",
+        "reset and workspace release"
+      ],
+      "automatic_T_doubling": false
+    },
+    "amy_sha256_Grover_predicate": {
+      "source": "amy2016",
+      "equation": 9,
+      "forward_T": 228992,
+      "inverse_T": 228992,
+      "comparator_T": 8108,
+      "predicate_T": 466092,
+      "Grover_diffusion_additional_T": 8076,
+      "full_iteration_T": 474168
+    }
+  },
+  "arithmetic": {
+    "smallest_surveyed_reported_T_accounting_product": {
+      "circuit": "hs_keccak",
+      "value": 3686400,
+      "over_selected_price": 3.515625,
+      "over_sufficient_price": 5.399957812829587
+    },
+    "same_hs_network_AND_only_product": {
+      "value": 921600,
+      "over_selected_price": 0.87890625,
+      "over_sufficient_price": 1.3499894532073968,
+      "role": "atomic-AND accounting illustration, excludes all other gates and cleanup"
+    },
+    "smallest_reported_Amy_full_gate_depth_product": {
+      "circuit": "amy_keccak",
+      "value": 344657511120
+    },
+    "selected_price_over_sufficient_price": 1.5359880000937494
+  },
+  "batch_and_parallel_conditions": [
+    "For independent identical disjoint circuits, A=k*g and delta=d give A*delta/k=g*d.",
+    "For reused serial workspace, k evaluations with g gates and d depth have A=k*g and delta=k*d, so A*delta/k=k*g*d before sharing optimizations.",
+    "Sharing, coherent lookup, pipeline overlap and retained intermediate states require actual circuit accounting.",
+    "CNOT copies of basis encodings preserve coherence and require gates, qubits and a schedule.",
+    "Fixed classical prefix precomputation can be amortized. Coherently indexed prefix data needs charged reversible access.",
+    "Use all gates and full depth in one library when comparing with a gate-depth budget. T-only or Toffoli-only figures are partial accounting."
+  ],
+  "source_quality_notes": [
+    {
+      "source": "haener_soeken",
+      "issue": "Table 3 gives previous Keccak-f T=24640 and T-depth=33. These equal Amy Table 2 chi plus chi-inverse for a single round, not the complete permutation.",
+      "resolution": "Use the new full Keccak row in Table 2 or Amy full permutation row."
+    },
+    {
+      "source": "lee_sha2_2022",
+      "issue": "SHA-Z4 T-depth is 4936. 4418 is its Toffoli-depth.",
+      "resolution": "Keep the two depth metrics distinct."
+    },
+    {
+      "source": "song2023",
+      "reported": {
+        "single_qubit_Clifford": 76886,
+        "CNOT": 591360,
+        "Toffoli": 38400,
+        "T_depth": 552,
+        "full_depth": 2020,
+        "chi_T_depth": 23,
+        "chi_full_depth": 12
+      },
+      "issue": "Chi T-depth exceeds its quoted full depth, so these numbers require different gate conventions or a correction.",
+      "resolution": "Excluded from selected Clifford+T gate-depth comparisons pending reconciliation."
+    },
+    {
+      "source": "withdrawn2024",
+      "issue": "Live ePrint metadata says withdrawn on 26 February 2025.",
+      "resolution": "Search-indexed tables excluded. Verify the published successor tables before use."
+    },
+    {
+      "source": "lee_sha3_2024",
+      "issue": "Code availability states the optimization software is not publicly available.",
+      "resolution": "Treat the table as a published construction estimate pending independent implementation."
+    }
+  ],
+  "remaining_research_obligations": [
+    "Specify the elementary logical gate library and measurement/feed-forward cost model.",
+    "Compile actual fixed-prefix 31-variable-bit nonce functions for both components, including canonical encoding and constant propagation.",
+    "Cost each requested output projection and each useful predicate, including pruning and cleanup.",
+    "Measure or derive full gate count, full depth and workspace at useful circuit trade-offs.",
+    "Evaluate coherent transcript selection, multi-query sharing, lookup and batches against sum_j k_sj*c_j <= A_s*delta_s.",
+    "Use exact complete success evaluation for any price selected from that assessment.",
+    "Verify newer published successor tables and implementation artifacts as they become accessible."
+  ],
+  "sources": {
+    "amy2016": {
+      "title": "Estimating the cost of generic quantum pre-image attacks on SHA-2 and SHA-3",
+      "authors": "Matthew Amy, Olivia Di Matteo, Vlad Gheorghiu, Michele Mosca, Alex Parent, John M. Schanck",
+      "version": "arXiv:1603.09383v3, 30 November 2016",
+      "url": "https://arxiv.org/pdf/1603.09383v3",
+      "locators": [
+        "Table 1, PDF page 10",
+        "Table 2, PDF page 13",
+        "Equation 9, PDF pages 14-15"
+      ],
+      "status": "primary author paper"
+    },
+    "haener_soeken": {
+      "title": "Lowering the T-depth of Quantum Circuits By Reducing the Multiplicative Depth Of Logic Networks",
+      "authors": "Thomas Haener, Mathias Soeken",
+      "version": "arXiv:2006.03845v1, 6 June 2020",
+      "url": "https://arxiv.org/pdf/2006.03845v1",
+      "published_url": "https://doi.org/10.1145/3501334",
+      "published_title": "Lowering the T-depth of Quantum Circuits via Logic Network Optimization",
+      "locators": [
+        "Section 2.4 and Figure 2, PDF page 3",
+        "Section 3.4, PDF page 4",
+        "Table 1, PDF page 5",
+        "Tables 2 and 3, PDF page 7"
+      ],
+      "status": "primary author paper and published successor with matching selected Table 2 values"
+    },
+    "meuli2019": {
+      "title": "The Role of Multiplicative Complexity in Compiling Low T-count Oracle Circuits",
+      "authors": "Giulia Meuli, Mathias Soeken, Earl Campbell, Martin Roetteler, Giovanni De Micheli",
+      "version": "ICCAD 2019, arXiv:1908.01609",
+      "url": "https://msoeken.github.io/papers/2019_iccad.pdf",
+      "alternate_url": "https://arxiv.org/abs/1908.01609",
+      "locators": [
+        "Abstract",
+        "Introduction",
+        "Section II-D"
+      ],
+      "status": "primary author paper"
+    },
+    "lee_sha3_2024": {
+      "title": "Toffoli-depth reduction method preserving in-place quantum circuits and its application to SHA3-256",
+      "authors": "Jongheon Lee, Yousung Kang, You-Seok Lee, Boheung Chung, Dooho Choi",
+      "version": "Quantum Information Processing 23, 153, 18 April 2024",
+      "url": "https://link.springer.com/article/10.1007/s11128-024-04365-2",
+      "author_institution_pdf": "https://ksp.etri.re.kr/ksp/article/file/68789.pdf",
+      "locators": [
+        "Section 4.2",
+        "Table 2, PDF page 25",
+        "Table 3, PDF page 26",
+        "Appendices C and D",
+        "Code availability"
+      ],
+      "status": "primary journal paper"
+    },
+    "lee_sha2_2022": {
+      "title": "T-depth reduction method for efficient SHA-256 quantum circuit construction",
+      "authors": "Jongheon Lee, Sokjoon Lee, You-Seok Lee, Dooho Choi",
+      "version": "First published 28 June 2022, IET Information Security 17(1), 46-65, 2023",
+      "url": "https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/ise2.12074",
+      "locators": [
+        "Section 2.4.2",
+        "Table 3",
+        "Sections 5.3-5.4"
+      ],
+      "status": "primary journal paper"
+    },
+    "kim2018": {
+      "title": "Time-Space Complexity of Quantum Search Algorithms in Symmetric Cryptanalysis",
+      "authors": "Panjin Kim, Kyung Chul Jeong, Daewan Han",
+      "version": "arXiv:1805.05534v1, 15 May 2018",
+      "url": "https://arxiv.org/pdf/1805.05534v1",
+      "locators": [
+        "Section 6.3 and Table 6, PDF page 32",
+        "Section 7.2"
+      ],
+      "status": "primary author paper"
+    },
+    "song2023": {
+      "title": "Improved Low-Depth SHA3 Quantum Circuit for Fault-Tolerant Quantum Computers",
+      "authors": "Gyeongju Song, Kyungbae Jang, Hwajeong Seo",
+      "version": "Applied Sciences 13(6), 3558, 10 March 2023",
+      "url": "https://www.mdpi.com/2076-3417/13/6/3558",
+      "locators": [
+        "Section 3",
+        "Tables 3 and 4"
+      ],
+      "status": "primary journal paper, mixed depth accounting requires reconciliation"
+    },
+    "fips180": {
+      "title": "FIPS 180-4, Secure Hash Standard",
+      "version": "August 2015",
+      "url": "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf",
+      "locators": [
+        "Sections 5.1.1 and 6.2"
+      ],
+      "status": "primary standard"
+    },
+    "keccak_team": {
+      "title": "Keccak specifications summary",
+      "url": "https://keccak.team/keccak_specs_summary.html",
+      "locators": [
+        "Permutation pseudocode",
+        "Sponge pseudocode",
+        "Standard instances, Table 3"
+      ],
+      "status": "primary designers specification summary"
+    },
+    "nist": {
+      "title": "NIST PQC security evaluation criteria",
+      "url": "https://csrc.nist.gov/projects/post-quantum-cryptography/post-quantum-cryptography-standardization/evaluation-criteria/security-(evaluation-criteria)",
+      "locators": [
+        "MAXDEPTH guidance and reference gate-count table"
+      ],
+      "status": "primary NIST reference page, retrieved 9 November 2026"
+    },
+    "withdrawn2024": {
+      "title": "Quantum Implementation and Analysis of SHA-2 and SHA-3",
+      "url": "https://eprint.iacr.org/2024/513",
+      "locators": [
+        "Metadata and History"
+      ],
+      "status": "withdrawn on 26 February 2025",
+      "successor_doi": "10.1109/TETC.2025.3546648",
+      "successor_tables_verified": false
+    }
+  },
+  "reproduce_arithmetic": "For each row with gate_counts, sum values then multiply by full_depth. For each row with T_count and T_depth, multiply those values. Native SHA blocks = (bytes+72)//64. Native Keccak blocks = bytes//136+1. Ratios use exact fractions before decimal conversion."
+}

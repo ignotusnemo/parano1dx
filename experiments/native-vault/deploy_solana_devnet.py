@@ -17,7 +17,7 @@ from solders.system_program import create_account,CreateAccountParams,ID as SYST
 from solders.compute_budget import set_compute_unit_limit
 from solders.sysvar import RENT,CLOCK
 from tpu_bridge import DirectTpu
-KEYS=Path(sys.argv[2]);ELF=Path(sys.argv[3]).read_bytes()
+KEYS=Path(sys.argv[2]);ELF_PATH=Path(sys.argv[3]);ELF=ELF_PATH.read_bytes()
 C=json.loads((KEYS/'public-deployment.json').read_text())
 V1=C.get('deployment_transaction_version')==1
 # The current loader rejects a 3584-byte Write instruction. Keep its bounded
@@ -33,6 +33,9 @@ def sanitize(value):
     return text
 assert C['genesis_hash']=='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG'
 assert len(ELF)==C['elf_bytes'] and hashlib.sha256(ELF).hexdigest()==C['elf_sha256']
+validation=json.loads(Path(str(ELF_PATH)+'.validation.json').read_text())
+assert validation['network_domain_hex']==C['network_domain_hex'], 'Validated network domain differs from the deployment manifest'
+assert validation['program_elf_sha256']==C['elf_sha256'] and validation['positive_lifecycle_completed']
 loader=Pubkey.from_string('BPFLoaderUpgradeab1e11111111111111111111111')
 def key(name):return Keypair.from_bytes(bytes(json.loads((KEYS/(name+'.json')).read_text())))
 payer,program,buffer=key('funder'),key('program'),key('buffer')

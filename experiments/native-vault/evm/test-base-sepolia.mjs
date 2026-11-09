@@ -54,7 +54,8 @@ let nextNonce=Number(BigInt(await rpc('eth_getTransactionCount',[payer.address,'
 const balance=async address=>BigInt(await rpc('eth_getBalance',[address,'latest']));
 const initialPayerBalance=await balance(payer.address);
 if(initialPayerBalance<1_000_000_000_000_000n)throw Error('At least 0.001 free Base Sepolia ETH is needed for setup, deposit and measured authorization');
-const compiled=JSON.parse(await readFile(path.join(toolDir,'compiled.json'),'utf8'));
+const compiledFile=path.resolve(option('--compiled',path.join(toolDir,'compiled.json')));
+const compiled=JSON.parse(await readFile(compiledFile,'utf8'));
 const receiptOf=hash=>rpc('eth_getTransactionReceipt',[hash]);
 async function waitReceipt(hash){
  const began=performance.now();
@@ -113,6 +114,7 @@ const deposit=10_000_000_000_000n,amount=2_500_000_000_000n;
 await send('deposit_native_test_ETH',vault.address,'0x',deposit);
 const expiry=BigInt(await rpc('eth_blockNumber'))+10000n;
 const [request]=await view(vault.address,vault.iface,'requestId',[recipient.address,amount,expiry]);
+const [context]=await view(vault.address,vault.iface,'requestContext',[recipient.address,amount,expiry]);
 const identity={network:'Base Sepolia',chain_id:84532,run,payer:payer.address,recipient:recipient.address,
  verifier:{address:checker.address,code_bytes:checker.codeBytes,code_keccak256:checker.codeHash,deployment_hash:checker.deployment},
  factory:{address:factory.address,code_keccak256:factory.codeHash,deployment_hash:factory.deployment},
@@ -121,15 +123,15 @@ const identity={network:'Base Sepolia',chain_id:84532,run,payer:payer.address,re
  rpc_url:endpoint,started_at_utc:new Date().toISOString()};
 await writeFile(path.join(results,'public-manifest.json'),json(identity));
 const began=performance.now(),proofBegan=performance.now();
-execFileSync(prover,[results,request.slice(2),network],{stdio:'inherit',env:proofEnv});
+execFileSync(prover,[results,request.slice(2),network,context.slice(2)],{stdio:'inherit',env:proofEnv});
 const proofPreparationMs=performance.now()-proofBegan,expansionBegan=performance.now();
 execFileSync('python3',[path.join(here,'prepare.py'),results],{stdio:'inherit',env:{...process.env,PYTHONPATH:pythonTools}});
 const expansionMs=performance.now()-expansionBegan;
 metadata=JSON.parse(await readFile(path.join(results,'native-proof.json'),'utf8'));
 const fixture=JSON.parse(await readFile(path.join(results,'evm-fixture.json'),'utf8')),b=fixture.base;
-const base=[b.evaluations,b.roots,b.finalPolynomial,b.outputs,b.outerInverses];
+const base=[b.evaluations,b.roots,b.finalPolynomial,b.outputs,b.outerInverses,b.queryPowWitness];
 const query=q=>[q.leaves,q.paths,q.inverses];
-const [challenges]=await view(checker.address,checker.iface,'transcript',[base,request]);
+const [challenges]=await view(checker.address,checker.iface,'transcript',[base,request,context]);
 for(const name of ['alpha','zeta','pcsAlpha'])if(challenges[name]!==BigInt(fixture.reference[name]))throw Error('Native transcript mismatch');
 if(challenges.indices.some((v,i)=>v!==BigInt(fixture.reference.indices[i])))throw Error('Native index mismatch');
 let cacheBytes='0x';
@@ -146,30 +148,30 @@ async function reject(operation,data){
 }
 await reject('changed_amount_rejected',encode(amount+1n,[]));
 await send('begin_authorization',vault.address,encode(amount,[]),0n,'authorization');await unchanged();
-await send('prepare_query_cache',vault.address,encode(amount,[]),0n,'authorization');await unchanged();
-const [cache]=await view(checker.address,checker.iface,'prepareCache',[base,request]);
+const [cache]=await view(checker.address,checker.iface,'prepareCache',[base,request,context]);
 const cacheType=checker.iface.getFunction('prepareCache').outputs[0];cacheBytes=AbiCoder.defaultAbiCoder().encode([cacheType],[cache]);
 const baseType=vault.iface.getFunction('authorize').inputs[3];
-const job=keccak256(AbiCoder.defaultAbiCoder().encode(['bytes32','bytes32'],[request,keccak256(AbiCoder.defaultAbiCoder().encode([baseType],[base]))]));
+const jobMessage=AbiCoder.defaultAbiCoder().encode(['bytes32','bytes32',baseType],[request,context,base]);
+const job='0x'+createHash('sha256').update(Buffer.from(jobMessage.slice(2),'hex')).digest('hex');const jobOther=keccak256(jobMessage);
 const bad=structuredClone(fixture.queries[0]),altered=Buffer.from(bad.leaves[0].slice(2),'hex');altered[0]^=1;bad.leaves[0]='0x'+altered.toString('hex');
 await reject('altered_proof_rejected',encode(amount,[query(bad)]));
 const wrong=fixture.queries.find((_,i)=>fixture.reference.indices[i]!==fixture.reference.indices[0]);
 await reject('query_skip_rejected',encode(amount,[query(wrong)]));
 const corruptCache='0x'+(BigInt('0x'+cacheBytes.slice(2,66))^1n).toString(16).padStart(64,'0')+cacheBytes.slice(66);
 await reject('altered_cache_rejected',encode(amount,[query(fixture.queries[0])],recipient.address,corruptCache));
-for(let start=0;start<64;start+=8){
- if(start===16){
+for(let start=0;start<64;start+=12){
+ if(start===24){
   // Recreate the fee signer and recover accepted progress and cache from public state.
   payer=new Wallet((await privateJSON('relayer.json')).privateKey);
   nextNonce=Number(BigInt(await rpc('eth_getTransactionCount',[payer.address,'pending'])));
-  const [progress]=await view(vault.address,vault.iface,'progress',[job]);if(progress!==18n)throw Error('Recovery progress');
-  const [rebuilt]=await view(checker.address,checker.iface,'prepareCache',[base,request]);
+  const [progress]=await view(vault.address,vault.iface,'progress',[job,jobOther]);if(progress!==25n)throw Error('Recovery progress');
+  const [rebuilt]=await view(checker.address,checker.iface,'prepareCache',[base,request,context]);
   cacheBytes=AbiCoder.defaultAbiCoder().encode([cacheType],[rebuilt]);
-  const [stored]=await view(vault.address,vault.iface,'cacheHashes',[job]);if(stored!==keccak256(cacheBytes))throw Error('Recovery cache binding');
-  observations.push({event:'relayer_reconstructed_after_16_queries',progress:Number(progress),cache_hash:stored});
+  const [stored]=await view(vault.address,vault.iface,'cacheHashes',[job,jobOther]);if(stored!==keccak256(cacheBytes))throw Error('Recovery cache binding');
+  observations.push({event:'relayer_reconstructed_after_24_queries',progress:Number(progress),cache_hash:stored});
  }
- await send(start===56?'verify_and_withdraw':'verify_query_batch',vault.address,encode(amount,fixture.queries.slice(start,start+8).map(query)),0n,'authorization');
- if(start<56)await unchanged();
+ await send(start+12>=64?'verify_and_withdraw':'verify_query_batch',vault.address,encode(amount,fixture.queries.slice(start,start+12).map(query)),0n,'authorization');
+ if(start+12<64)await unchanged();
 }
 const confirmedS=(performance.now()-began)/1000,after=await snapshot();
 if(after.vault!==before.vault-amount||after.recipient!==before.recipient+amount||after.nonce!==before.nonce+1n)throw Error('Withdrawal state mismatch');
@@ -188,7 +190,7 @@ const result={...identity,positive_lifecycle_completed:true,authorization_transa
  total_experiment_fee_wei:allFees,payer_balance_reconciled:true,payer_balance_before:initialPayerBalance,payer_balance_after:finalPayerBalance,
  before,after,withdrawal_hash:final.hash,withdrawal_explorer_url:'https://sepolia.basescan.org/tx/'+final.hash,
  native_transcript_matches:true,replay_rejected:true,observations,records,
- timing_scope:'Proof preparation, expansion, read-only adversarial checks and ten sequential L2 receipt observations. Shared deployment and deposit precede the timer.',
+ timing_scope:`Proof preparation, expansion, read-only adversarial checks and ${authorization.length} sequential L2 receipt observations. Shared deployment and deposit precede the timer.`,
  fee_scope:'Actual Base Sepolia receipt fees in test ETH. Mainnet pricing is a separate read-only quote.',real_assets_used:false};
 result.finality_observation_file='finality-observation.json';
 await writeFile(path.join(results,'live-result.json'),json(result));

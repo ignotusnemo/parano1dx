@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-09",
+  "profile": {
+    "trace_rows": 128,
+    "execution_rows": 64,
+    "main_mask_coordinates": 192,
+    "committed_degree_bound": 256,
+    "codeword_rows": 4096,
+    "queries": 64,
+    "extension_degree": 8,
+    "base_prime": 2130706433,
+    "batched_functions": 268,
+    "merkle_salt_words": 20,
+    "query_grinding_bits": 12,
+    "poseidon_full_rounds": 8,
+    "poseidon_partial_rounds": 26,
+    "query_sampling": "one-response distinct subset"
+  },
+  "real_assets_used": false,
+  "host": "QEMU Virtual CPU version 2.5+",
+  "measurement_scope": "Individual public-testnet observations from a common research relayer host. Timers include proof preparation and observed withdrawal confirmation. Deployment and vault deposits precede the timers. Testnet fees are recorded in native units.",
+  "base_sepolia": {
+    "chain_id": 84532,
+    "authorization_transactions": 7,
+    "authorization_gas": 71251369,
+    "maximum_authorization_transaction_gas": 11506367,
+    "confirmed_s": 16.814215718,
+    "wallet_proving_ms": 41.603032,
+    "authorization_fee_wei": "427672327237518",
+    "execution_fee_wei": "427672326734226",
+    "l1_data_fee_wei": "503292",
+    "operator_fee_wei": "0",
+    "withdrawal_hash": "0xae8ed556aedffc67ec293b7abf85b0fb79ac6ecd99f6041493c0c39598d1fc30",
+    "withdrawal_explorer_url": "https://sepolia.basescan.org/tx/0xae8ed556aedffc67ec293b7abf85b0fb79ac6ecd99f6041493c0c39598d1fc30",
+    "timing_scope": "Proof preparation, expansion, read-only adversarial checks and 7 sequential L2 receipt observations. Shared deployment and deposit precede the timer.",
+    "fee_scope": "Actual Base Sepolia receipt fees in test ETH. Mainnet pricing is a separate read-only quote.",
+    "record": "experiments/native-vault/results/base-sepolia/strong-public-normal-1/live-result.json",
+    "independent_audit": "experiments/native-vault/results/base-sepolia/strong-public-normal-1/independent-audit.json",
+    "compiled_contracts_record": "experiments/native-vault/results/optimized-evm/compiled.json"
+  },
+  "solana_devnet": [
+    {
+      "program_id": "FB9ytgt5LKnfPFDUHjy2Ebyup4pHvnqiWjoeJPz9iPeG",
+      "transaction_version": "v1",
+      "unique_authorization_transactions": 91,
+      "ordered_verification_windows": 12,
+      "withdrawal_confirmed_s": 23.00889621701208,
+      "withdrawal_finalized_s": 28.998238294007024,
+      "actual_network_fee_lamports": 460000,
+      "temporary_reserve_lamports": 252897640,
+      "reserve_refunded": true,
+      "withdrawal_signature": "5HFoZHQW4NdS8BbfRjAkwjmtabxJCyQ5myrxEJojqJ8zyuj1cTPdxqDRUy2nsuVMWxCLNAzga2kSNwSgbT5c4oz6",
+      "fault_injection_enabled": false,
+      "scope": "Complete live Devnet authorization from the recorded research relayer host. The timer includes proof preparation, temporary-account creation, delivery and observed confirmation. Setup and program deployment precede the timer. Finality is Devnet finality.",
+      "case": "strong-v1-normal-2",
+      "maximum_verification_CU": 1346251,
+      "wallet_proving_ms": 34.292164,
+      "record": "experiments/native-vault/results/solana-devnet/strong-v1-normal-2/live-result.json",
+      "independent_audit": "experiments/native-vault/results/solana-devnet/strong-v1-normal-2/independent-audit.json",
+      "fault_events": [],
+      "withdrawal_explorer_url": "https://explorer.solana.com/tx/5HFoZHQW4NdS8BbfRjAkwjmtabxJCyQ5myrxEJojqJ8zyuj1cTPdxqDRUy2nsuVMWxCLNAzga2kSNwSgbT5c4oz6?cluster=devnet"
+    },
+    {
+      "program_id": "FB9ytgt5LKnfPFDUHjy2Ebyup4pHvnqiWjoeJPz9iPeG",
+      "transaction_version": "v1",
+      "unique_authorization_transactions": 92,
+      "ordered_verification_windows": 12,
+      "withdrawal_confirmed_s": 25.212925223982893,
+      "withdrawal_finalized_s": 30.10204347697436,
+      "actual_network_fee_lamports": 465000,
+      "temporary_reserve_lamports": 241762280,
+      "reserve_refunded": true,
+      "withdrawal_signature": "5wwyNGgFRsyvsUAk1tXfSWavLJH8ctGPa3zNc3YKCjacpKn579L33YKor6YUEbUbh6tV1xZyK5Pno5sqpfUktm6s",
+      "fault_injection_enabled": true,
+      "scope": "Complete live Devnet authorization from the recorded research relayer host. The timer includes proof preparation, temporary-account creation, delivery and observed confirmation. Setup and program deployment precede the timer. Finality is Devnet finality.",
+      "case": "strong-v1-faults-1",
+      "maximum_verification_CU": 1364077,
+      "wallet_proving_ms": 31.965839000000003,
+      "record": "experiments/native-vault/results/solana-devnet/strong-v1-faults-1/live-result.json",
+      "independent_audit": "experiments/native-vault/results/solana-devnet/strong-v1-faults-1/independent-audit.json",
+      "fault_events": [
+        {
+          "case": "reordered_window_batch_with_lost_packet",
+          "frame": 18,
+          "dropped_offset": 28672
+        },
+        {
+          "case": "bitmap_resume_missing_chunks_only",
+          "frame": 18,
+          "missing_offsets": [
+            28672
+          ]
+        }
+      ],
+      "withdrawal_explorer_url": "https://explorer.solana.com/tx/5wwyNGgFRsyvsUAk1tXfSWavLJH8ctGPa3zNc3YKCjacpKn579L33YKor6YUEbUbh6tV1xZyK5Pno5sqpfUktm6s?cluster=devnet"
+    }
+  ],
+  "independent_audits_passed": true,
+  "evidence_sha256": {
+    "experiments/native-vault/results/base-sepolia/strong-public-normal-1/live-result.json": "0eacb2f8a82e3588a5b061ad3995ee95377bc2ac0be4ba2b4b22f7a460061907",
+    "experiments/native-vault/results/base-sepolia/strong-public-normal-1/independent-audit.json": "318838871978511e7c892d71c38b52bc5bfcb9e098c603731ceb0ae1042907a5",
+    "experiments/native-vault/results/optimized-evm/compiled.json": "af69ce84e8dc18c2a5adb796bb9cf0513bffc02d61dbe1956513942c4b498b4d",
+    "experiments/native-vault/results/base-sepolia/strong-public-normal-1/native-proof.json": "ecb8e8ce9a18006648185cb6818f866daf139e1c66ad4ba103c1793d1e0a9cd8",
+    "experiments/native-vault/results/solana-devnet/optimized-deployment.json": "6ae3b48491fa6d6a4d72fc6f874d658cbfa29dd66ecdfd8b57605be4e526c596",
+    "experiments/native-vault/results/solana-devnet/optimized-build-validation.json": "7d123ddf68a24de815d24d0037a1e4182d72b9813c6f4604bbe8a777562ed4de",
+    "experiments/native-vault/results/solana-devnet/optimized-native-vault-v1.so": "a52f2fcc19ad98d70aae18fd96f612ef3cb2b8027c05ed510f1f1f98c338bd02",
+    "experiments/native-vault/results/solana-devnet/optimized-build-manifest.json": "2f48e5cd815c7ba004ceade8e8fb057532f9afd34590816c27bba05dfc1e702e",
+    "experiments/native-vault/results/solana-devnet/strong-v1-normal-2/live-result.json": "c355a0fdf92d9d6b550eddd839b649d25e269bb38c12f8a87b6ed7d345925f38",
+    "experiments/native-vault/results/solana-devnet/strong-v1-normal-2/independent-audit.json": "3db3bed2b6600b397ec447091f46f09e5a8a1ec26a4c659531cb1ea9caef1b04",
+    "experiments/native-vault/results/solana-devnet/strong-v1-normal-2/native-proof.json": "a47e36b528bfaf5a4bb6040e5d6bcd9c1797dba6c31aeddccbe445315f3b00e3",
+    "experiments/native-vault/results/solana-devnet/strong-v1-normal-2/transaction-journal.jsonl": "f3d741a7a8b44c5db7a0880c33a8ac2415a33474d102417eebaa1226b34a5f5f",
+    "experiments/native-vault/results/solana-devnet/strong-v1-faults-1/live-result.json": "71141d416044ccf01065930a1668d6e1a6094866f5429e03c40d05cdf2302b6b",
+    "experiments/native-vault/results/solana-devnet/strong-v1-faults-1/independent-audit.json": "9c5f8359fc6da6faf06f1eff916e465e9ea42c60b016d077e7e38bf1f64ca040",
+    "experiments/native-vault/results/solana-devnet/strong-v1-faults-1/native-proof.json": "386234e8d87c3c9b2c1ef9e8bc03a633dd855e1282b830def01ecd5db0f8cd26",
+    "experiments/native-vault/results/solana-devnet/strong-v1-faults-1/transaction-journal.jsonl": "078d9503a7b23a48d98eedcd78d9ace0651c94822b5a2d112a1f30986557be6a"
+  }
+}

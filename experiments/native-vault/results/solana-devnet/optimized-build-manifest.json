@@ -1,0 +1,11 @@
+{
+  "network_domain_hex": "2660f6abec724a80f1ed8083e5aa9081ef004d9b5b8e49bd4385da4826c06646",
+  "files_sha256": {
+    "program-devnet.so": "a52f2fcc19ad98d70aae18fd96f612ef3cb2b8027c05ed510f1f1f98c338bd02",
+    "program-devnet.so.validation.json": "7d123ddf68a24de815d24d0037a1e4182d72b9813c6f4604bbe8a777562ed4de",
+    "test_solana_devnet.py": "137f1d3387451435d64e607c35c2bfc9359f51f903e997dec7b2e9ccd5e75488",
+    "deploy_solana_devnet.py": "cafe267b13c71dfdf6b38f6ac62042a1ef3e1f9a676b006820ca01ceacde3ab5"
+  },
+  "auth_build_rs_sha256": "8ea8bb52789d431602330b4936639e0559da599940a2358be9ef12ca173ed1d7",
+  "validation_scope": "Signed local v1 wires and complete SBF lifecycle with the Devnet network domain."
+}

@@ -1,0 +1,51 @@
+Authority primitives and fixed parameters
+9 November 2026
+
+The authorization reduction uses the exact fixed authority-preimage
+game of authorization.txt, the joint HKDF game and the joint private
+mask-and-salt generator game. Their advantages are separate terms in
+the full resource corollary.
+
+Poseidon2 uses KoalaBear p=2130706433, width 24, fourteen secret elements,
+ten capacity elements and twelve output elements. The capacity is fixed
+by H(AUTH_DOMAIN). The permutation has eight full rounds and 26 partial
+rounds. The official Grain generator and round inequalities are
+reproduced by poseidon_parameters.py. The reference table agrees in
+all 215 canonical 8/23 constants before generation of the selected
+8/26 constants. The selected round count satisfies the generator's
+classical target-256 inequalities and its margin rules.
+
+The concrete authority condition is preimage resistance for the full
+installed commitment under the exact fixed constants, capacity and
+secret distribution. Its resource budget includes the complete
+extractor described in authorization.txt. The cryptanalysis, matrix
+checks and round generator support this condition with reproducible
+evidence. The Category 1 certificate records its required advantage
+margin explicitly.
+
+One Parano1d secret is 256 bits. HKDF-SHA256 separates networks and
+account indices. Fourteen 32-bit words are reduced into F_p. The exact
+residue distribution has either two or three word preimages per field
+element. This distribution is preserved in the authority game.
+
+Fresh 256-bit operating-system randomness seeds each proof. Distinct
+SHA256-labelled branches feed the field-mask generator, the Merkle salt
+generator and the free-row generator. Their joint output is replaced by
+independent uniform field coins in the private-generator hybrid. The
+simulator uses twenty independent field salts per matrix row in that
+hybrid. Public preprocessing has its own deterministic seed.
+
+check_profile.py proves primality by Proth's certificate, irreducibility
+of X^8-3 by Rabin's criterion and bijectivity of the cube on F_p. It checks
+both linear-layer ranks, 69 nonzero base-block minors, 96 internal-layer
+observability powers, the order-64 rotation and all finite mask budgets.
+check_mask_transport.py checks the exact production-size polynomial
+translations, all eight quotient cosets and the full aggregate identity.
+check_rs_certificate.py checks five finite interpolation certificates
+and thirty native Fourier-fold basis identities.
+
+References
+https://github.com/HorizenLabs/poseidon2/blob/main/poseidon2_rust_params.sage
+https://eprint.iacr.org/2023/323
+https://eprint.iacr.org/2024/1037
+https://eprint.iacr.org/2026/2056

@@ -1,0 +1,13 @@
+{
+  "scope": "finite matrix identities and exact small-domain cold-group counts",
+  "numpy_version": "2.4.0",
+  "ordinary_query_commutator_max_entry": 1.6177134978107546e-16,
+  "row_relabel_covariance_max_entry": 1.1102230246251565e-16,
+  "row_decomposition_max_state_residual": 1.0354913960968682e-15,
+  "cold_read_norm_formula_max_error": 2.220446049250313e-16,
+  "protected_root_projector_commutator_max_entry": 0.0,
+  "cold_group_predicate_cases": 48,
+  "cold_group_reconstruction_injective": true,
+  "threshold": 1e-12,
+  "all_checks_passed": true
+}

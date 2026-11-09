@@ -1,4 +1,4 @@
-use parano1dx_vault_auth::{parameter_id,withdrawal_id,sha256,stream};
+use parano1dx_vault_auth::{parameter_id,withdrawal_message,sha256,keccak256,stream};
 use solana_program::{
     account_info::{AccountInfo,next_account_info},entrypoint,entrypoint::ProgramResult,
     program::{invoke,invoke_signed},program_error::ProgramError,pubkey::Pubkey,
@@ -32,7 +32,7 @@ const VAULT_LEN:usize=80;
 const HEADER:usize=256;
 const PREVIOUS:usize=HEADER+stream::CACHE_BYTES;
 const WINDOW:usize=PREVIOUS+stream::QUERY_BYTES;
-const MAX_BATCH:usize=5;
+const MAX_BATCH:usize=6;
 const MAX_WINDOW:usize=1+MAX_BATCH*(2+stream::QUERY_BYTES+stream::DELTA_HEADER_BYTES);
 const BASE_FRAME:u16=u16::MAX;
 #[cfg(not(feature="wide-transport"))]
@@ -83,11 +83,11 @@ fn initialize_vault(pid:&Pubkey,accounts:&[AccountInfo],args:&[u8])->ProgramResu
     d[40..48].copy_from_slice(&0u64.to_le_bytes());d[48..80].copy_from_slice(&parameter_id(CAP));Ok(())
 }
 fn initialize_job(pid:&Pubkey,accounts:&[AccountInfo],args:&[u8])->ProgramResult {
-    require(args.len()==65&&(1..=MAX_BATCH).contains(&(args[64] as usize)),120)?;let mut iter=accounts.iter();let job=next_account_info(&mut iter)?;let uploader=next_account_info(&mut iter)?;
+    require(args.len()==129&&(1..=MAX_BATCH).contains(&(args[64] as usize)),120)?;let mut iter=accounts.iter();let job=next_account_info(&mut iter)?;let uploader=next_account_info(&mut iter)?;
     require(job.owner==pid&&job.is_writable&&job.is_signer&&uploader.is_signer,121)?;let mut d=job.try_borrow_mut_data()?;
     require(d.len()>=WINDOW+stream::BASE_BYTES&&d.len()<=WINDOW+MAX_WINDOW&&d[..HEADER].iter().all(|&x|x==0),123)?;
     d[..8].copy_from_slice(JOB_MAGIC);d[8]=0;d[17..49].copy_from_slice(&args[..32]);
-    d[49..81].copy_from_slice(uploader.key.as_ref());d[81..113].copy_from_slice(&args[32..64]);d[133]=args[64];Ok(())
+    d[49..81].copy_from_slice(uploader.key.as_ref());d[81..113].copy_from_slice(&args[32..64]);d[133]=args[64];d[134..166].copy_from_slice(&args[65..97]);d[166..198].copy_from_slice(&args[97..129]);Ok(())
 }
 fn upload_window(pid:&Pubkey,accounts:&[AccountInfo],args:&[u8])->ProgramResult {
     require(args.len()>12,130)?;let mut iter=accounts.iter();let job=next_account_info(&mut iter)?;let uploader=next_account_info(&mut iter)?;
@@ -132,23 +132,23 @@ fn verify_step(pid:&Pubkey,accounts:&[AccountInfo],args:&[u8],allow_incomplete:b
     require(Clock::get()?.slot<=expires&&amount>0,157)?;
     let remaining=vault.lamports().checked_sub(amount).ok_or(error(158))?;require(remaining>=Rent::get()?.minimum_balance(VAULT_LEN),158)?;
     let recipient_balance=recipient.lamports().checked_add(amount).ok_or(error(159))?;let next_nonce=nonce.checked_add(1).ok_or(error(160))?;
-    let request=withdrawal_id(pid.to_bytes(),vault.key.to_bytes(),recipient.key.to_bytes(),nonce,amount,expires,parameter_id(CAP));
+    let message=withdrawal_message(pid.to_bytes(),vault.key.to_bytes(),recipient.key.to_bytes(),nonce,amount,expires,parameter_id(CAP));let request=sha256(&message);let context=keccak256(&message);
     let mut d=job.try_borrow_mut_data()?;let (expected,maximum)=frame(&d)?;let len=u32_at(&d,13)?;
-    require(d[81..113]==request&&frame_at(args,24)?==expected&&u32_at(args,26)?==u32_at(&d,129)?,163)?;
+    require(d[81..113]==request&&d[166..198]==context&&frame_at(args,24)?==expected&&u32_at(args,26)?==u32_at(&d,129)?,163)?;
     require(len>0&&len<=maximum,164)?;
     let chunks=len.div_ceil(CHUNK_BYTES);require(chunks<64,164)?;
     let complete=u32_at(&d,9)?==len&&u64_at(&d,121)?==(1u64<<chunks)-1;
     if allow_incomplete&&!complete {return Ok(());}
     require(complete,164)?;
     if expected==BASE_FRAME {
-        require(sha256(&d[WINDOW..WINDOW+len])==d[17..49],165)?;
-        let cache=stream::prepare(&d[WINDOW..WINDOW+len],request,c).map_err(|e|error(400+e.0))?.encode();
+        require(sha256(&d[WINDOW..WINDOW+len])==d[17..49]&&keccak256(&d[WINDOW..WINDOW+len])==d[134..166],165)?;
+        let cache=stream::prepare_deferred(&d[WINDOW..WINDOW+len],request,context,c).map_err(|e|error(400+e.0))?.encode();
         d[HEADER..PREVIOUS].copy_from_slice(&cache);d[8]=1;d[9..17].fill(0);d[121..129].fill(0);return Ok(());
     }
-    let cache=stream::QueryCache::read(&d[HEADER..PREVIOUS]).map_err(|e|error(400+e.0))?;
-    let (query,next)=stream::check_delta_batch(&cache,expected as usize,&d[PREVIOUS..WINDOW],
+    let mut cache=stream::QueryCache::read(&d[HEADER..PREVIOUS]).map_err(|e|error(400+e.0))?;
+    let (query,next)=stream::check_delta_batch(&mut cache,expected as usize,&d[PREVIOUS..WINDOW],
         &d[WINDOW..WINDOW+len],d[133] as usize).map_err(|e|error(400+e.0))?;
-    d[PREVIOUS..WINDOW].copy_from_slice(&query);
+    d[HEADER..PREVIOUS].copy_from_slice(&cache.encode());d[PREVIOUS..WINDOW].copy_from_slice(&query);
     d[113..121].copy_from_slice(&(next as u64).to_le_bytes());d[9..17].fill(0);d[121..129].fill(0);
     if next<64 {return Ok(());}
     d[8]=2;drop(d);vault.try_borrow_mut_data()?[40..48].copy_from_slice(&next_nonce.to_le_bytes());

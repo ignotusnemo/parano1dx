@@ -1,0 +1,89 @@
+{
+  "profile": "KoalaBear, extension 8, 64 queries, blowup 16, hybrid 512-bit hashes",
+  "current_lossless_delta_bytes": 297759,
+  "current_components": {
+    "leaf_literals": 149664,
+    "sibling_literals": 133760,
+    "inverse_literals": 4096,
+    "delta_bitmaps": 768,
+    "batch_framing": 139,
+    "base": 9332
+  },
+  "ordinary_previous_component_delta_bytes": 325023,
+  "derived_sibling_bytes_saved": 27264,
+  "global_frontier_format_estimate_bytes": 269588,
+  "global_frontier_trees": [
+    {
+      "tree": "random",
+      "unique_leaves": 64,
+      "leaf_bytes": 9216,
+      "authentication_frontier_nodes": 336,
+      "authentication_frontier_bytes": 21504,
+      "total_bytes": 30720
+    },
+    {
+      "tree": "trace",
+      "unique_leaves": 64,
+      "leaf_bytes": 17408,
+      "authentication_frontier_nodes": 336,
+      "authentication_frontier_bytes": 21504,
+      "total_bytes": 38912
+    },
+    {
+      "tree": "quotient",
+      "unique_leaves": 64,
+      "leaf_bytes": 73728,
+      "authentication_frontier_nodes": 336,
+      "authentication_frontier_bytes": 21504,
+      "total_bytes": 95232
+    },
+    {
+      "tree": "public_preprocessing",
+      "unique_leaves": 64,
+      "leaf_bytes": 12288,
+      "authentication_frontier_nodes": 336,
+      "authentication_frontier_bytes": 21504,
+      "total_bytes": 33792
+    },
+    {
+      "tree": "fri_1",
+      "unique_leaves": 63,
+      "leaf_bytes": 13104,
+      "authentication_frontier_nodes": 210,
+      "authentication_frontier_bytes": 13440,
+      "total_bytes": 26544
+    },
+    {
+      "tree": "fri_2",
+      "unique_leaves": 60,
+      "leaf_bytes": 12480,
+      "authentication_frontier_nodes": 90,
+      "authentication_frontier_bytes": 5760,
+      "total_bytes": 18240
+    },
+    {
+      "tree": "fri_3",
+      "unique_leaves": 39,
+      "leaf_bytes": 8112,
+      "authentication_frontier_nodes": 20,
+      "authentication_frontier_bytes": 1280,
+      "total_bytes": 9392
+    },
+    {
+      "tree": "fri_4",
+      "unique_leaves": 16,
+      "leaf_bytes": 3328,
+      "authentication_frontier_nodes": 0,
+      "authentication_frontier_bytes": 0,
+      "total_bytes": 3328
+    }
+  ],
+  "public_preprocessing_frontier_bytes": 33792,
+  "global_frontier_with_embedded_preprocessing_estimate_bytes": 235796,
+  "v1_3584_byte_upload_packets": 89,
+  "v1_eager_transactions_before_retries": 91,
+  "global_frontier_payload_only_transaction_floor": 66,
+  "embedded_preprocessing_payload_only_transaction_floor": 58,
+  "research_transaction_target": 30,
+  "scope": "Byte accounting for this fixed proof profile. Frontier totals are prospective lossless encodings, with zero framing overhead. Packet counts exclude retries. Executable transports are measured separately."
+}

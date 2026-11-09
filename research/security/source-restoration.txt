@@ -1,0 +1,222 @@
+Public-coin knowledge and source restoration
+9 November 2026
+
+The fixed 4096-position profile has a polynomial-time prefix extractor
+with round-by-round error
+
+    kappa_public <= C(896,64)/C(4096,64) + N_f/p^8,
+    p=2130706433.
+
+The query term has negative binary logarithm 142.94109606984. The exact
+finite first-order certificates and integer N_f are reproduced by
+check_rs_certificate.py. This analysis uses 64 queries, the existing
+blowup sixteen and the existing degree-eight challenge field.
+
+1. Immutable words and finite interpolation certificates
+
+Expose committed batches as immutable arrays. Keep every prover message
+and verifier coin in its native order. Main words precede alpha.
+Quotient and randomization words precede z. Opening claims precede gamma.
+Each current FRI word precedes its folding challenge. The final constant
+precedes the complete 64-position query move.
+
+Use the finite first-order interpolation and counting results of Dao,
+Kominers and Thaler, 2026/2056, Proposition C.2 and Lemma 5.5. They apply
+to arbitrary prescribed evaluation domains. The characteristic conditions
+are checked below for the actual prime, including when source columns
+are encoded in a larger extension for interleaved list decoding.
+
+For length n, dimension k, threshold A, multiplicity m, derivative degree
+M and total jet degree B, put D=k-1. The derivative-weighted support has
+monomials X^x Y_0^a Y_1^b satisfying b<=M, a+b<=B and
+x+D*a+(D-1)*b<m*A. Its degree-t coefficient count and local rank bound are
+
+    N_t = sum_(b=0)^min(t,M) max(m*A-D*t+b,0),
+    R_t = sum_(s=0)^(m-1) 1_[s+(D-1)t<m*A]
+          * max(0,min(m-s,min(t,s)-max(0,t-M)+1)).
+
+Put C=sum_t N_t and R=n*sum_t R_t. Every certificate has C>R and
+
+    (C-R)*H > R*B.
+
+For a received curve of degree ell, this implies
+C*(ell*H+1)>R*(ell*H+ell*B+1). A coefficient count therefore gives a
+nonzero polynomial kernel vector of challenge degree at most ell*H.
+Dividing its common univariate content makes its specialization nonzero
+at every challenge. Substituting any degree-<k candidate with A agreements
+then gives a polynomial of degree below m*A and at least m*A roots,
+counting multiplicity. It vanishes identically. The support rank bounds
+are Proposition C.2. This argument also explains why the line-to-affine
+reduction is not used for powers batching.
+
+The checked tuples are listed as (n,k,A,m,M,B,H).
+
+    Source list:    (4096,257,896,256,157,888,405516956)
+    Gamma and FRI:  (4096,256,896,192,126,672,177710)
+    FRI:            (1024,64,224,64,42,227,53572)
+    FRI:            (256,16,56,24,15,87,2838)
+    FRI:            (64,4,14,4,2,18,390)
+
+The Gamma tuple is used again for the first fold. All five finite certificates
+satisfy p>max(D,M). The largest derivative degree is 157.
+Every folding threshold equals ceil((7/32)*n).
+
+2. List and curve bounds
+
+Put lambda=(n-D)/(A-D), b=B*(2M+1) and h=H*(2M+1). The squarefree
+first-order counting theorem gives the following conservative bounds:
+
+    Lambda = ceil(4*D*lambda*B*M+2*B*M+B),
+    E = ceil((2b-1)h+lambda*(h+b+4*D*b*h)+(n-D-1)b
+        +(48*D^2*H+16*D)*lambda^2*B*M
+        +8*D*(n-D-1)*lambda*B*M).
+
+Lambda bounds every fixed-word list. A degree-ell received curve has
+at most ell*E exceptional challenges. To see the latter specialization,
+use challenge degree ell*H in Lemma 5.5. Its ordinary-resultant and
+regular-family terms are bounded as in the proof of Theorem 5.2.
+Each term is linear in the received-curve degree and this height, giving
+the displayed ell*E envelope. For M=0, Remark 5.6 supplies the ordinary
+case and the regular terms vanish.
+
+At every other challenge, every candidate with A agreements admits
+coefficient witnesses on its full agreement set. The counting proof
+splits ordinary resultant solutions from regular differential solutions.
+Taylor reconstruction uses p>D, and separability uses p>M. These are
+exactly the characteristic guards checked for each tuple. Corollaries
+6.4 and 6.6 transfer the list and curve statements to interleaved words
+without a width factor.
+
+Let Lambda_src be Lambda for the source-list tuple. This bound is
+independent of the received word and field extension. Lists are decoded
+by the first-order algorithms in Section 9 of the same paper. For an
+interleaved source, encode all columns in an extension of the base field,
+decode, and expand the coefficients in its fixed basis. The algorithm
+is polynomial in the code length, field representation and certificate
+parameters.
+
+3. Restoration through the actual FRI folds
+
+Each production domain is a multiplicative coset and each arity r is four.
+Write t=x^r. Fourier decomposition of a current word v defines coefficient
+words u_j(t) by
+
+    v(x)=sum_(j=0)^(r-1) x^j u_j(x^r).
+
+The actual native fold at beta is sum_j beta^j u_j(t). The field-matrix
+checker compares this identity with the optimized two- and four-point
+formulas in the streaming verifier. It checks every coordinate basis,
+so the same linear identities hold over the extension field.
+
+Suppose the next restored polynomial Q(t), of degree below k/r, agrees
+with the folded word at the descendants of a good query set. Pull it
+back to Q(X^r). On the current domain its full agreement set S contains
+the good set and is a union of complete r-point orbits. Apply polynomial-
+curve MCA to the words u_j(X^r), at degree r-1, using the current tuple.
+Outside its exceptional set, it gives polynomials U_j(X) of degree below
+k agreeing with those words on the full set S.
+
+For a primitive r-th root omega, U_j(omega*X)-U_j(X) vanishes on S.
+Its degree is below k, while |S|>=A>k. Therefore it is zero. Since r
+is invertible, U_j(X)=Q_j(X^r) with degree Q_j<k/r. The polynomial
+sum_j X^j Q_j(X^r) has degree below k and agrees with v on S. This
+restores the previous word while retaining every original good query.
+The full-set property supplies the orbit closure used in this step.
+
+Starting with the transmitted final constant, repeat through arities
+4,4,4,4. The code lengths and dimensions are (4096,256), (1024,64),
+(256,16) and (64,4). The initial FRI coordinate is unshifted.
+Pulling its polynomial back by the public source coset shift gives the
+same degree bound and agreement set on the source domain.
+
+4. Direct restoration of opening claims
+
+Before gamma, each source column P_j and its advertised claim v_j at
+z_j are fixed. Its DEEP word is
+
+    d_j(q)=(P_j(q)-v_j)/(q-z_j).
+
+Exclude z values where a public evaluation denominator vanishes. The
+public domains and rotations cost at most 8192/p^8. The native batching
+word is a powers combination of 268 such words, of curve degree 267.
+Apply its finite Gamma certificate to the restored initial FRI polynomial.
+It supplies degree-<256 polynomials R_j agreeing with every d_j on the
+same full set, outside at most 267*E_gamma challenges.
+
+Set P'_j(X)=(X-z_j)R_j(X)+v_j. It has degree at most 256, agrees with
+the corresponding committed source on that set and takes the advertised
+value at z_j. Two reconstructions of a main column, at z and g*z, agree
+on more than 256 points. Hence they are identical and both claims are
+its evaluations. The public preprocessing reconstruction likewise equals
+its authenticated polynomial.
+
+Each private source value on this set is in F_p. The coefficientwise
+Frobenius difference of P'_j has degree at most 256 and vanishes at more
+than 256 base-field points. It is zero, so P'_j has coefficients in F_p.
+The reconstructed source tuples therefore belong to the lists of
+dimension 257 fixed before their respective verifier coins.
+
+5. AIR flags and exact field ledger
+
+For every decoded main candidate, form all constraint remainders modulo
+Z_H. An invalid trace has a nonzero remainder. Its alpha composition
+is a nonzero polynomial of degree at most 61, giving at most
+62*Lambda_src exceptional alpha values.
+
+Outside this flag, pair each main candidate with every decoded quotient
+candidate. The composed constraint polynomial minus the reconstructed
+Z_H multiple is nonzero. The native outer equation evaluates this
+polynomial at z. Its degree is at most 4608. This bound includes main
+and quotient source degree 256, the degree-896 chunk selectors and
+Z_H of degree 128. Thus all pairs cost at most
+4608*Lambda_src^2 exceptional z values. Since Lambda_src^2>=8192,
+the excluded public-domain points fit the additional Lambda_src^2.
+
+The complete field numerator is
+
+    N_f = 62*Lambda_src+4609*Lambda_src^2
+          +267*E_gamma+sum_i (r_i-1)*E_i.
+
+Every integer and characteristic guard is reproduced in
+rs-certificate.json. The four E_i use their own finite tuples. All
+constructor, field, commitment and verifier parameters are those of the
+fixed implementation profile.
+
+6. Query bound and round-by-round knowledge
+
+Fix a complete transcript before its final query move. Its good-index
+set contains exactly those source positions passing the complete native
+query predicate. If its density exceeded a=7/32 and all flags above
+were absent, backward folding and direct opening restoration would give
+source candidates on that same good set. The outer equation would then
+contradict the absence of the alpha and z flags unless a valid main
+trace were in the decoded list. The prefix extractor enumerates that
+list, checks the trace on the 128-point subgroup and returns its first
+fourteen elements at logical row one as an authority preimage.
+
+Consequently, on failed extraction and with all flags absent, at most
+896 of the 4096 source positions pass. A uniform 64-element subset is
+contained in that set with probability C(896,64)/C(4096,64).
+
+The implemented query sampler uses one 512-bit response. Its low twelve
+bits must be zero. The remaining 500 bits, reduced modulo M=C(4096,64),
+select the subset by colexicographic rank. Every rank has at most
+ceil(2^500/M) preimages. Its exact joint bad-response density is at most
+
+    kappa_query = ceil(2^500/M)*C(896,64)/2^512.
+
+Every field challenge is the radix-p expansion of a uniform 512-bit
+integer reduced modulo p^8. A set of b extension values has density at
+most ceil(2^512/p^8)*b/2^512. Thus
+
+    kappa_field = ceil(2^512/p^8)*N_f/2^512,
+    kappa = kappa_query+kappa_field.
+
+The prefix extractor decodes the same finite source list, checks the
+128-point trace with transition stride two and returns the secret at
+logical row one. It uses the deterministic first-order decoder of
+DKT26, Section 9. Its characteristic guard p>2*(B+1)^3 holds for B<=888.
+The scalar source support and kernel-height guards are checked exactly
+by check_rs_certificate.py. This is a polynomial-time extractor with
+fixed code length 4096. Its full deterministic decoding cost is included
+in the authority-preimage adversary in authorization.txt.

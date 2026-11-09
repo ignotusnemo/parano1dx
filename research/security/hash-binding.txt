@@ -1,0 +1,45 @@
+Hybrid hash binding and exact host acceptance
+9 November 2026
+
+Every Merkle root compares both complete 32-byte components by equality.
+The field encoding is injective and every limb is checked below p.
+A root match therefore requires agreement of SHA256 and Keccak256 on
+the same typed input. The ideal interface is one uniform 512-bit function
+with coherent access to either projection. Giving both projections on
+every query strengthens that adversary. The resource floor is charged
+at the cheaper component interface.
+
+Canonical requests bind their full SHA256||Keccak256 pair. The first
+32 bytes enter the AIR as sixteen u16 limbs. The second component is
+part of the challenger's initial state. It is recomputed from the same
+request encoding by each vault. EVM jobs use a two-component key and
+authenticate both components of the retained cache digest. Solana jobs
+retain both components of the base and request digests in program-owned
+state. The nonce is consumed before any value is released.
+
+An unequal base, cache, canonical request or Merkle input accepted under
+the same retained hybrid digest gives a collision in this 512-bit
+interface. Source reconstruction also uses the physical input and output
+pairs. The terminal recording and collision envelope is included in
+compiler.txt as E_record(T). There is one global hash experiment.
+
+The fixed authority commitment remains 32 bytes. Its target is the
+already installed vault authority. Recovering an authority preimage is
+the separate primitive game in authorization.txt. The parameter manifest
+and preprocessing root are fixed by the deployed verifier.
+
+Solana transports a 64-position vector with its base. Its expected rank
+is derived from the one native query response. Consecutive verification
+windows add each position's exact binomial rank term once. At position
+64, equality with the expected rank is required before the nonce update
+and payout. Strict increasing order and the 4096-position range are
+checked with those terms. The colexicographic rank is a bijection on
+64-element subsets. These predicates have exactly the same conjunction
+as native unranking. Their order creates no additional accepting proof.
+
+Lossless path deltas reconstruct each ordinary query from the previous
+verified query. At a path divergence, the omitted sibling is the previous
+leaf hashed through its preceding siblings. Literal siblings replace the
+other selected components. Every reconstructed path, leaf and fold value
+passes the ordinary checker. The relayer cannot modify the program-owned
+cache or advance its contiguous query and rank counters.

@@ -1,40 +1,28 @@
-V1 transport and the next proof-size target
+Selected lossless proof transport
+9 November 2026
 
-The public Solana Devnet v1 cases complete authorization in 18.08 seconds
-with 88 transactions and 22.34 seconds with 91 transactions under injected
-packet loss and reordering. All 64 query predicates remain in the verifier.
-The client submits each window as a QUIC batch. Every upload also checks
-whether its bitmap is complete. The completing transaction verifies the
-whole frame atomically. Confirmed account updates enable the next window.
+The Solana v1 local fixture completes authorization in 91 transactions.
+It uses a 9332-byte base, a 9858-byte protected cache and a reusable query
+window. The maximum verification transaction costs 1,353,196 CU under
+the 1,400,000-CU limit. The native acceptance predicate is preserved.
 
-The current signed packet limit is 4,096 bytes. Payload chunks use 3,584
-bytes. The largest measured authorization remains within 1,400,000 CU.
-There are fourteen ordered windows. The protected cache and accepted query
-prefix survive delivery retries. The full temporary reserve is returned.
+The capsule is 297759 bytes including its base and batch framing.
+Its 64 delta witnesses contain 288288 bytes. Each query reconstructs the
+ordinary eight leaves, 76 sibling digests and two inverse hints.
+Adjacent paths derive their divergence sibling from the previous verified
+leaf. Literal components replace the other selected values.
 
-Byte accounting for the normal public v1 capsule
+The base carries 64 positions. The program accumulates their exact
+colexicographic rank through the existing windows. It compares the final
+rank with the one-response Fiat-Shamir rank before transferring value.
+Every position term is charged once. No additional transaction is needed
+for this predicate.
 
-  Encoded delta capsule:             278,085 bytes.
-  Global Merkle frontier estimate:    224,312 bytes.
-  With embedded public preprocessing:   194,848 bytes.
-  Payload-only v1 packet floors:      55 and 48 transactions.
+The EVM fixture uses seven authorization transactions and 71,160,950 gas.
+Its maximum signed transaction is 126478 bytes. Every verification
+transaction stays below 16,777,216 gas. The verifier is 17713 bytes.
 
-These frontier totals describe prospective lossless encodings of this
-fixed proof. Their packet floors divide by 4,096 and include zero framing
-overhead. They are format-specific counts. A thirty-transaction target
-therefore calls for a smaller proof representation in addition to v1
-transport and removal of repeated authentication material.
-
-A concrete next research path is transparent recursive compression of the
-public capsule. The compression statement binds the request, authority and
-parameter identity and requires acceptance by the strict inner verifier.
-An external prover can receive that public capsule. The wallet retains
-the Parano1d secret and its masking seed. The outer system needs quantum
-knowledge extraction that recovers the inner capsule in the same adaptive
-authorization experiment, with its extraction loss quantified. Privacy can
-then be reduced to the inner capsule's witness-protection property because
-the compressor receives only the already-public proof. This is the next
-protocol research obligation.
-
-The current measurements and machine byte counts are in
-results/public-network-summary.json and results/transport-analysis.json.
+The local result records contain signed-wire checks, ordered progress,
+relayer restart recovery, malformed-input rejection and rent refund.
+Public delivery and confirmation measurements retain their recorded
+network, date and proof profile.

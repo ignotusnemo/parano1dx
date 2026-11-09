@@ -1,0 +1,8 @@
+{
+  "matrix_basis_and_extension_cases": 56,
+  "deferred_reduction_cases": 9,
+  "exact_root_cases": 9,
+  "all_checks_passed": true,
+  "accumulation_upper_bound": "230343437504354344483933913088",
+  "accumulator_fits_uint256": true
+}

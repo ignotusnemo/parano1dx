@@ -11,20 +11,32 @@ x=json.loads((case/'evm-export.json').read_text())
 fixture=json.loads((case/'evm-fixture.json').read_text())
 fri=x['proof']['opening_proof'][1]
 indices=fixture['reference']['indices']
-leaf_lengths=[104,232,832,148,168,168,168,168,104]
-heights=[12,12,12,12,10,8,6,4,3]
-names=['random','trace','quotient','public_preprocessing','fri_1','fri_2','fri_3','fri_4','fri_5']
+salt=x.get('profile',{}).get('merkle_salt_words',10)
+group=6 if 'profile' in x else 5
+leaf_lengths=[(16+salt)*4,(48+salt)*4,8*(16+salt)*4,(28+salt)*4]+[(32+salt)*4]*4
+heights=[12,12,12,12,10,8,6,4]
+names=['random','trace','quotient','public_preprocessing','fri_1','fri_2','fri_3','fri_4']
 current={name:0 for name in ['leaf_literals','sibling_literals','inverse_literals','delta_bitmaps','batch_framing','base']}
-current['base']=len((case/'stream-base.bin').read_bytes());current['batch_framing']=13+64*2
+current['base']=len((case/'stream-base.bin').read_bytes());current['batch_framing']=math.ceil(64/group)+64*2
 for i in range(64):
     delta=(case/f'stream-delta-{i:02}.bin').read_bytes();current['delta_bitmaps']+=12
     lengths=leaf_lengths+[64]*sum(heights)+[32,32]
     for item,length in enumerate(lengths):
         if delta[item//8]&(1<<(item%8)):
-            current['leaf_literals' if item<9 else 'sibling_literals' if item<88 else 'inverse_literals']+=length
-assert sum(current.values())==current['base']+sum((case/f'stream-delta-{i:02}.bin').stat().st_size for i in range(64))+141
+            current['leaf_literals' if item<8 else 'sibling_literals' if item<84 else 'inverse_literals']+=length
+assert sum(current.values())==current['base']+sum((case/f'stream-delta-{i:02}.bin').stat().st_size for i in range(64))+math.ceil(64/group)+128
+plain_delta_bytes=0
+previous=bytes(sum(leaf_lengths)+sum(heights)*64+64)
+lengths=leaf_lengths+[64]*sum(heights)+[32,32]
+for i in range(64):
+    witness=(case/f'stream-query-{i:02}.bin').read_bytes()
+    at=0;plain_delta_bytes+=12
+    for n in lengths:
+        if witness[at:at+n]!=previous[at:at+n]:plain_delta_bytes+=n
+        at+=n
+    assert at==len(witness);previous=witness
 trees=[]
-for tree in range(9):
+for tree in range(8):
     opening=fri['input_openings'][tree] if tree<4 else fri['commit_phase_openings'][tree-4]
     shift=0 if tree<4 else 12-heights[tree]
     unique={}
@@ -43,10 +55,12 @@ for tree in range(9):
 global_bytes=current['base']+sum(t['total_bytes'] for t in trees)+len(set(indices))*64
 public_preprocessing=trees[3]['total_bytes']
 base_packets=sum(math.ceil(len(data)/3584) for data in [(case/'stream-base.bin').read_bytes()]+[
-    bytes([min(5,64-start)])+b''.join(struct.pack('<H',len(d))+d for d in [(case/f'stream-delta-{i:02}.bin').read_bytes() for i in range(start,min(64,start+5))])
-    for start in range(0,64,5)])
-result={'profile':'KoalaBear, extension 8, 64 queries, blowup 8, hybrid 512-bit hashes',
+    bytes([min(group,64-start)])+b''.join(struct.pack('<H',len(d))+d for d in [(case/f'stream-delta-{i:02}.bin').read_bytes() for i in range(start,min(64,start+group))])
+    for start in range(0,64,group)])
+result={'profile':'KoalaBear, extension 8, 64 queries, blowup 16, hybrid 512-bit hashes',
     'current_lossless_delta_bytes':sum(current.values()),'current_components':current,
+    'ordinary_previous_component_delta_bytes':current['base']+current['batch_framing']+plain_delta_bytes,
+    'derived_sibling_bytes_saved':plain_delta_bytes-sum((case/f'stream-delta-{i:02}.bin').stat().st_size for i in range(64)),
     'global_frontier_format_estimate_bytes':global_bytes,'global_frontier_trees':trees,
     'public_preprocessing_frontier_bytes':public_preprocessing,
     'global_frontier_with_embedded_preprocessing_estimate_bytes':global_bytes-public_preprocessing,

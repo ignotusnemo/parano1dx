@@ -1,0 +1,19 @@
+{
+  "production_size_polynomial_checks_passed": true,
+  "main_coordinates": 144,
+  "quotient_coordinates": 72,
+  "query_points": 64,
+  "quotient_cosets_exercised": 8,
+  "outside_quotient_coset_exercised": true,
+  "balanced_quotient_identity_preserved": true,
+  "complete_aggregate_difference_cancelled": true,
+  "randomizer_degree_below": 256,
+  "residual_coefficients_at_most": 184,
+  "private_trace_mask_dimension": 192,
+  "runtime_PCS_disclosure_budget": 80,
+  "execution_vanishing_degree": 64,
+  "full_degree_batching_rank": 8,
+  "proper_subfield_batching_rank": 4,
+  "randomizer_kernel_rank": 8,
+  "scope": "deterministic finite arithmetic vector for the mask-transport lemmas"
+}

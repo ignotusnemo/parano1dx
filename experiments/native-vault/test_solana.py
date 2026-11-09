@@ -17,12 +17,15 @@ from solders.message import MessageV1,TransactionConfig
 from solders.transaction_metadata import FailedTransactionMetadata
 from solders.compute_budget import request_heap_frame,set_compute_unit_limit
 import solders
+from Crypto.Hash import keccak
+def kh(data):
+    h=keccak.new(digest_bits=256);h.update(data);return h.digest()
 
 ROOT=Path(__file__).resolve().parent
 def option(name,default):return sys.argv[sys.argv.index(name)+1] if name in sys.argv else default
 RESULTS=Path(option('--fixture-directory',str(ROOT/'results'))).resolve()
-GROUP=int(option('--group-size','5'))
-assert 1<=GROUP<=5
+GROUP=int(option('--group-size','6'))
+assert 1<=GROUP<=6
 OUTPUT=Path(option('--output-directory',str(RESULTS)))
 OUTPUT.mkdir(parents=True,exist_ok=True)
 REUSE='--reuse-fixture' in sys.argv
@@ -40,15 +43,17 @@ recipient=Keypair.from_seed(bytes([89])*32).pubkey()
 job_key=Keypair.from_seed(bytes([91])*32)
 commitment=bytes(metadata['authority_commitment'])
 vault,bump=Pubkey.find_program_address([b'Parano1dX-vault',commitment],pid)
-network=b'Parano1dX local Solana research1'
+network=bytes(metadata['network_domain'])
+assert len(network)==32
 parameters=bytes(metadata['parameter_id'])
 nonce,amount,expires=0,250_000_000,100_000
-request=hashlib.sha256(b'Parano1dX/v1/withdraw/SOL'+network+bytes(pid)+bytes(vault)+parameters+
-    struct.pack('<Q',nonce)+bytes(recipient)+struct.pack('<QQ',amount,expires)+bytes(32)+bytes(8)).digest()
+message=(b'Parano1dX/v1/withdraw/SOL'+network+bytes(pid)+bytes(vault)+parameters+
+    struct.pack('<Q',nonce)+bytes(recipient)+struct.pack('<QQ',amount,expires)+bytes(32)+bytes(8))
+request=hashlib.sha256(message).digest();context=kh(message)
 prover_fixture_wall_ms=transport_expansion_ms=0.
 if not REUSE:
     start=time.perf_counter()
-    subprocess.run([sys.argv[3],str(RESULTS),request.hex()],check=True)
+    subprocess.run([sys.argv[3],str(RESULTS),request.hex(),network.hex(),context.hex()],check=True)
     prover_fixture_wall_ms=(time.perf_counter()-start)*1000
     start=time.perf_counter()
     subprocess.run([sys.executable,str(ROOT/'evm/prepare.py'),str(RESULTS)],check=True,
@@ -63,12 +68,13 @@ base=(RESULTS/'stream-base.bin').read_bytes()
 queries=[(RESULTS/f'stream-delta-{i:02}.bin').read_bytes() for i in range(64)]
 frames=[(start,bytes([len(queries[start:start+GROUP])])+b''.join(struct.pack('<H',len(q))+q for q in queries[start:start+GROUP]))
         for start in range(0,64,GROUP)]
-HEADER,CACHE,BASE_FRAME=256,9792,65535
+HEADER,CACHE,BASE_FRAME=256,stream_check["cache_bytes"],65535
+QUERY_BYTES=metadata['stream_query_bytes']
 PREVIOUS=HEADER+CACHE
-WINDOW=PREVIOUS+7212
+WINDOW=PREVIOUS+QUERY_BYTES
 capacity=max(len(base),max(len(data) for _,data in frames))
 space=WINDOW+capacity
-assert len(base)==9232 and all(12<=len(q)<=7224 for q in queries)
+assert len(base)==metadata['stream_base_bytes'] and all(12<=len(q)<=QUERY_BYTES+12 for q in queries)
 svm=LiteSVM()
 svm.airdrop(payer.pubkey(),100_000_000_000)
 svm.airdrop(second_payer.pubkey(),1_000_000_000)
@@ -120,7 +126,7 @@ send('deposit_native_SOL',[transfer(TransferParams(from_pubkey=payer.pubkey(),to
 rent=svm.minimum_balance_for_rent_exemption(space)
 send('create_proof_buffer',[
     create_account(CreateAccountParams(from_pubkey=payer.pubkey(),to_pubkey=job_key.pubkey(),lamports=rent,space=space,owner=pid)),
-    ix(bytes([1])+hashlib.sha256(base).digest()+request+bytes([GROUP]),[meta(job_key.pubkey(),True,True),meta(payer.pubkey(),False,True)])],
+    ix(bytes([1])+hashlib.sha256(base).digest()+request+bytes([GROUP])+kh(base)+context,[meta(job_key.pubkey(),True,True),meta(payer.pubkey(),False,True)])],
     signers=[payer,job_key],cu=25000)
 snapshot=lambda:(svm.get_balance(vault) or 0,svm.get_balance(recipient) or 0,bytes(svm.get_account(vault).data))
 before=snapshot()
@@ -187,8 +193,11 @@ for label,n,a,e,accounts in [
     ('changed_recipient',nonce,amount,expires,[meta(vault,True),meta(second_payer.pubkey(),True),meta(job_key.pubkey(),True)])]:
     send(label,[verify(0,n,a,e,accounts)],expect_success=False,scope='adversarial');assert snapshot()==before
 
-for label,at in [('altered_input_opening',0),('altered_FRI_row',1316),('altered_Merkle_path',2092),('altered_inverse',7148)]:
-    assert len(queries[0])==7224
+salt=metadata['merkle_salt_words']
+input_bytes=4*((16+salt)+(48+salt)+8*(16+salt)+(28+salt))
+leaf_bytes=input_bytes+4*4*(32+salt)
+for label,at in [('altered_input_opening',0),('altered_FRI_row',input_bytes),('altered_Merkle_path',leaf_bytes),('altered_inverse',QUERY_BYTES-64)]:
+    assert len(queries[0])==QUERY_BYTES+12
     bad=bytearray(frames[0][1]);bad[15+at]^=1
     transfer_frame(0,bad,scope='adversarial',verify_success=False)
     assert snapshot()==before
@@ -201,7 +210,7 @@ bad=bytearray(frames[0][1]);bad[-1]^=1
 transfer_frame(0,bad,scope='adversarial',verify_success=False)
 state=bytes(svm.get_account(job_key.pubkey()).data)
 assert snapshot()==before and int.from_bytes(state[113:121],'little')==0
-assert state[HEADER:PREVIOUS]==accepted_cache and state[PREVIOUS:WINDOW]==bytes(7212)
+assert state[HEADER:PREVIOUS]==accepted_cache and state[PREVIOUS:WINDOW]==bytes(QUERY_BYTES)
 reset(0)
 
 for window_index,(q,data) in enumerate(frames):
@@ -212,7 +221,7 @@ for window_index,(q,data) in enumerate(frames):
     row=transfer_frame(q,data,restart=q==restart_frame)
     state=bytes(svm.get_account(job_key.pubkey()).data)
     accepted=min(q+GROUP,64)
-    assert int.from_bytes(state[113:121],'little')==accepted and state[HEADER:PREVIOUS]==accepted_cache
+    assert int.from_bytes(state[113:121],'little')==accepted and state[HEADER:PREVIOUS-130]==accepted_cache[:-130]
     if accepted<64:assert snapshot()==before
     if q==restart_frame:
         send('lost_response_retry_rejected',[verify(q)],expect_success=False,scope='adversarial')
@@ -233,6 +242,7 @@ adversarial=[r for r in records if r['scope']=='adversarial']
     'conflicting_duplicate_rejected':True,'stale_generation_rejected':True,'query_skip_rejected':True,
     'retry_preserves_verified_prefix':True,'records':adversarial},indent=2)+'\n')
 summary={'runtime':f'solders {solders.__version__} LiteSVM','transport':'batched_sorted_queries_with_lossless_delta_window',
+    'network_domain_hex':network.hex(),'program_elf_sha256':hashlib.sha256(Path(sys.argv[2]).read_bytes()).hexdigest(),
     'transaction_version':'v1' if V1 else 'legacy','chunks_per_upload_transaction':PACK,'upload_chunk_bytes':CHUNK,
     'eager_window_completion_probes':EAGER,
     'local_vm_message_format':'Legacy instruction replay with matching inline limits. Signed v1 wires are checked separately.' if V1 else 'legacy',
@@ -240,8 +250,8 @@ summary={'runtime':f'solders {solders.__version__} LiteSVM','transport':'batched
     'proof_bytes':metadata['proof_bytes'],'capsule_bytes':len(base)+sum(len(data) for _,data in frames),
     'delta_payload_bytes':sum(map(len,queries)),
     'batch_framing_bytes':sum(len(data) for _,data in frames)-sum(map(len,queries)),
-    'common_base_bytes':len(base),'expanded_query_bytes':7212,'maximum_encoded_query_bytes':max(map(len,queries)),
-    'retained_previous_query_bytes':7212,'cache_bytes':CACHE,'witness_window_bytes':capacity,
+    'common_base_bytes':len(base),'expanded_query_bytes':QUERY_BYTES,'maximum_encoded_query_bytes':max(map(len,queries)),
+    'retained_previous_query_bytes':QUERY_BYTES,'cache_bytes':CACHE,'witness_window_bytes':capacity,
     'query_batch_size':GROUP,'proof_fixture_reused':REUSE,
     'withdrawal_lamports':amount,'withdrawal_CU':row['compute_units'],'verification_transactions':1+len(frames),
     'maximum_verification_transaction_CU':max(r['compute_units'] for r in positive if r['operation']!='upload'),

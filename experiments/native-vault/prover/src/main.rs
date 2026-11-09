@@ -11,23 +11,34 @@ fn main() {
         let metadata:serde_json::Value=serde_json::from_slice(&std::fs::read(root.join("native-proof.json")).unwrap()).unwrap();
         let request=core::array::from_fn(|i|metadata["request_id"][i].as_u64().unwrap() as u8);
         let commitment=core::array::from_fn(|i|metadata["authority_commitment"][i].as_u64().unwrap() as u8);
+        let context=core::array::from_fn(|i|metadata["request_context"][i].as_u64().unwrap() as u8);
         let base=std::fs::read(root.join("stream-base.bin")).unwrap();
-        let start=Instant::now();let cache=stream::prepare(&base,request,commitment).unwrap();
+        let start=Instant::now();let cache=stream::prepare(&base,request,context,commitment).unwrap();
         let cache_bytes=cache.encode();let cache=stream::QueryCache::read(&cache_bytes).unwrap();
+        let mut invalid_grinding_rejected=false;
+        for candidate in 0u32..32 {
+            let mut altered=base.clone();
+            altered[stream::BASE_BYTES-4..].copy_from_slice(&candidate.to_le_bytes());
+            if matches!(stream::prepare(&altered,request,context,commitment),Err(stream::StreamError(19))){
+                invalid_grinding_rejected=true;break;
+            }
+        }
+        assert!(invalid_grinding_rejected);
         let mut previous=vec![0u8;stream::QUERY_BYTES];
         for i in 0..64 {
             let query=std::fs::read(root.join(format!("stream-query-{i:02}.bin"))).unwrap();
             let delta=std::fs::read(root.join(format!("stream-delta-{i:02}.bin"))).unwrap();
-            assert_eq!(stream::expand_delta(&previous,&delta).unwrap(),query);
-            let mut trailing=delta.clone();trailing.push(0);assert!(stream::expand_delta(&previous,&trailing).is_err());
-            let mut mask=delta.clone();mask[11]|=0x80;assert!(stream::expand_delta(&previous,&mask).is_err());
-            if delta.len()>12 {assert!(stream::expand_delta(&previous,&delta[..delta.len()-1]).is_err());}
+            assert_eq!(stream::expand_delta(&cache,i,&previous,&delta).unwrap(),query);
+            let mut trailing=delta.clone();trailing.push(0);assert!(stream::expand_delta(&cache,i,&previous,&trailing).is_err());
+            let mut mask=delta.clone();mask[11]|=0x80;assert!(stream::expand_delta(&cache,i,&previous,&mask).is_err());
+            if delta.len()>12 {assert!(stream::expand_delta(&cache,i,&previous,&delta[..delta.len()-1]).is_err());}
             stream::check_query(&cache,i,&query).unwrap();
             let mut bad=query.clone();bad[0]^=1;assert!(stream::check_query(&cache,i,&bad).is_err());
             previous=query;
         }
-        let mut bad_request=request;bad_request[0]^=1;assert!(stream::prepare(&base,bad_request,commitment).is_err());
-        for batch_size in 1..=5 {
+        let mut bad_request=request;bad_request[0]^=1;assert!(stream::prepare(&base,bad_request,context,commitment).is_err());
+        for batch_size in 1..=6 {
+            let mut cache=stream::QueryCache::read(&cache_bytes).unwrap();
             let mut previous=vec![0u8;stream::QUERY_BYTES];
             for start in (0..64).step_by(batch_size) {
                 let count=batch_size.min(64-start);let mut encoded=vec![count as u8];
@@ -35,18 +46,20 @@ fn main() {
                     let delta=std::fs::read(root.join(format!("stream-delta-{i:02}.bin"))).unwrap();
                     encoded.extend((delta.len() as u16).to_le_bytes());encoded.extend(delta);
                 }
-                let (last,next)=stream::check_delta_batch(&cache,start,&previous,&encoded,batch_size).unwrap();
+                let mut rejected_cache=stream::QueryCache::read(&cache.encode()).unwrap();
+                let (last,next)=stream::check_delta_batch(&mut cache,start,&previous,&encoded,batch_size).unwrap();
                 assert_eq!(next,start+count);
                 assert_eq!(last,std::fs::read(root.join(format!("stream-query-{:02}.bin",next-1))).unwrap());
                 let mut invalid=encoded.clone();let n=invalid.len();invalid[n-1]^=1;
-                assert!(stream::check_delta_batch(&cache,start,&previous,&invalid,batch_size).is_err());
+                assert!(stream::check_delta_batch(&mut rejected_cache,start,&previous,&invalid,batch_size).is_err());
                 previous=last;
             }
         }
         let elapsed=start.elapsed().as_secs_f64()*1000.;
         println!("{}",serde_json::json!({"stream_conjunction_verified":true,"query_count":64,
             "altered_query_rejected":true,"changed_request_rejected":true,"cache_bytes":cache_bytes.len(),
-            "batch_sizes_checked":[1,2,3,4,5],"last_query_corruption_rejected":true,
+            "invalid_query_grinding_rejected":invalid_grinding_rejected,
+            "batch_sizes_checked":[1,2,3,4,5,6],"last_query_corruption_rejected":true,
             "host_check_ms_including_mutations":elapsed}));return;
     }
     let root=std::path::PathBuf::from(std::env::args().nth(1).expect("result directory"));
@@ -64,6 +77,7 @@ fn main() {
     let network=if let Some(hex)=std::env::args().nth(3) {
         assert_eq!(hex.len(),64);core::array::from_fn(|i|u8::from_str_radix(&hex[2*i..2*i+2],16).unwrap())
     } else {NETWORK};
+    let context=if let Some(hex)=std::env::args().nth(4) {assert_eq!(hex.len(),64);core::array::from_fn(|i|u8::from_str_radix(&hex[2*i..2*i+2],16).unwrap())}else{[0;32]};
     let secret=derive_authority_secret(&root_secret,network,0);
     assert_eq!(secret,derive_authority_secret(&root_secret,network,0));
     assert_ne!(secret,derive_authority_secret(&root_secret,network,1));
@@ -73,19 +87,19 @@ fn main() {
         assert_eq!(hex.len(),64);
         core::array::from_fn(|i|u8::from_str_radix(&hex[2*i..2*i+2],16).unwrap())
     } else {sha256(b"Parano1dX public local withdrawal fixture")};
-    let (t,public)=trace(secret,request);
-    let preprocessing_config=config([0x50;32]);
-    let (pp,vk)=setup_preprocessed(&preprocessing_config,&AuthorityAir,TRACE_LOG).unwrap().unwrap();
-    let compiled=compile_air_metadata(&preprocessing_config,&AuthorityAir,TRACE_LOG);
-    std::fs::write(root.join("compiled-air.bin"),postcard::to_allocvec(&compiled).unwrap()).unwrap();
     let mut seed=[0u8;32];getrandom::fill(&mut seed).unwrap();
-    let cfg=config(seed);
+    let (t,public)=trace(secret,request,seed);
+    let preprocessing=preprocessing_config();
+    let (pp,vk)=setup_preprocessed(&preprocessing,&AuthorityAir,TRACE_LOG).unwrap().unwrap();
+    let compiled=compile_air_metadata(&preprocessing,&AuthorityAir,TRACE_LOG);
+    std::fs::write(root.join("compiled-air.bin"),postcard::to_allocvec(&compiled).unwrap()).unwrap();
+    let cfg=config_for_context(seed,context);
     let start=Instant::now();
     let proof=prove_with_preprocessed(&cfg,&AuthorityAir,t,&public,Some(&pp)).unwrap();
     let prove_ms=start.elapsed().as_secs_f64()*1000.0;
     let start=Instant::now();
     p3_fri::checkpoint::start_recording();
-    verify_with_preprocessed(&config([0;32]),&AuthorityAir,&proof,&public,Some(&vk)).unwrap();
+    verify_with_preprocessed(&config_for_context([0;32],context),&AuthorityAir,&proof,&public,Some(&vk)).unwrap();
     let native_verify_ms=start.elapsed().as_secs_f64()*1000.0;
     let recorded=p3_fri::checkpoint::take_recorded();
     let hints:Vec<Vec<Vec<Ext>>>=recorded.iter().map(|round|round.iter().map(|bytes|{
@@ -93,14 +107,14 @@ fn main() {
         bytes.chunks_exact(core::mem::size_of::<Ext>()).map(|b|unsafe{b.as_ptr().cast::<Ext>().read_unaligned()}).collect()
     }).collect()).collect();
     let start=Instant::now();
-    verify_with_preprocessed_and_compiled(&config([0;32]),&AuthorityAir,&proof,&public,Some(&vk),Some(&compiled)).unwrap();
+    verify_with_preprocessed_and_compiled(&config_for_context([0;32],context),&AuthorityAir,&proof,&public,Some(&vk),Some(&compiled)).unwrap();
     let verify_ms=start.elapsed().as_secs_f64()*1000.0;
     let mut bytes=encode_proof(&proof,&hints);
-    export::write(&root,&proof,&public,&hints,&vk,&compiled);
+    export::write(context,&root,&proof,&public,&hints,&vk,&compiled);
     {
         let decoded=decode_proof(&mut bytes).unwrap();
         assert_eq!(bincode::serialize(&proof).unwrap(),bincode::serialize(&*decoded).unwrap());
-        verify_with_preprocessed(&config([0;32]),&AuthorityAir,&decoded,&public,Some(&vk)).unwrap();
+        verify_with_preprocessed(&config_for_context([0;32],context),&AuthorityAir,&decoded,&public,Some(&vk)).unwrap();
     }
     // The staged verifier must accept the same complete conjunction as the
     // strict verifier. The wallet never signs a separate spending key.
@@ -113,12 +127,12 @@ fn main() {
             else if stage<=batches+rounds {((2u64<<56)|(stage-1-batches) as u64,VerificationChecks::OpeningOnly)}
             else {((3u64<<56)|(stage-1-batches-rounds) as u64,VerificationChecks::OpeningOnly)};
         p3_fri::checkpoint::set_native_stage(mode,rows.clone());
-        verify_with_checks(&config([0;32]),&AuthorityAir,&proof,&public,Some(&vk),Some(&compiled),checks).unwrap();
+        verify_with_checks(&config_for_context([0;32],context),&AuthorityAir,&proof,&public,Some(&vk),Some(&compiled),checks).unwrap();
     }
     p3_fri::checkpoint::set_native_stage(0,Vec::new());
     let mut altered:Proof=bincode::deserialize(&bincode::serialize(&proof).unwrap()).unwrap();
     altered.opening_proof.1.input_openings[0].opened_values[0][0][0]+=Val::ONE;
-    assert!(verify_with_preprocessed_and_compiled(&config([0;32]),&AuthorityAir,&altered,&public,Some(&vk),Some(&compiled)).is_err());
+    assert!(verify_with_preprocessed_and_compiled(&config_for_context([0;32],context),&AuthorityAir,&altered,&public,Some(&vk),Some(&compiled)).is_err());
     let pack=|p:&Proof,h:&[Vec<Vec<Ext>>]| {
         let mut out=Vec::new();for v in &public[..OUTPUTS] {out.extend(v.as_canonical_u32().to_le_bytes());}
         out.extend(encode_proof(p,h));out
@@ -137,12 +151,15 @@ fn main() {
         "authority_commitment":authority_commitment(&public[..OUTPUTS]),
         "network_domain":network,"vault_index":0,"root_source":if private_root.is_some(){"private research file"}else{"public local fixture"},
         "outputs":public[..OUTPUTS].iter().map(|x|x.as_canonical_u32()).collect::<Vec<_>>(),
-        "request_id":request,"parameter_id":parameter_id(&postcard::to_allocvec(&vk.commitment).unwrap()),
+        "request_context":context,"request_id":request,"parameter_id":parameter_id(&postcard::to_allocvec(&vk.commitment).unwrap()),
         "preprocessed_width":vk.width,"degree_bits":vk.degree_bits,
         "trace_rows":TRACE_ROWS,"trace_columns":MAIN_WIDTH,"FRI_queries":NUM_QUERIES,
         "input_batches":proof.opening_proof.1.input_openings.len(),"fri_rounds":hints.len(),
         "fri_arities":hints.iter().map(|r|r[0].len()).collect::<Vec<_>>(),
         "FRI_blowup":1<<LOG_BLOWUP,"challenge_extension_degree":8,
+        "merkle_salt_words":MERKLE_SALT_WORDS,"query_grinding_bits":QUERY_GRINDING_BITS,
+        "poseidon_full_rounds":FULL_ROUNDS,"poseidon_partial_rounds":PARTIAL_ROUNDS,
+        "stream_base_bytes":stream::BASE_BYTES,"stream_query_bytes":stream::QUERY_BYTES,
         "hash":"SHA-256 || Keccak-256","zero_knowledge":"HidingFriPcs, hiding Merkle commitments and uni-STARK randomization enabled"});
     std::fs::write(root.join("native-proof.json"),serde_json::to_string_pretty(&out).unwrap()+"\n").unwrap();
     println!("{}",serde_json::json!({"verified":true,"proof_bytes":bytes.len(),"prove_ms":prove_ms,"verify_ms":verify_ms}));

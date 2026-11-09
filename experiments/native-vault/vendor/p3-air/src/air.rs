@@ -175,6 +175,8 @@ pub trait BaseAir<F>: Sync {
     /// Must be consistent with [`Air::eval`]. Omitting a column index when
     /// the AIR actually reads its next row will cause verification failures
     /// or, in the worst case, a soundness gap.
+    fn next_row_stride(&self) -> usize { 1 }
+
     fn main_next_row_columns(&self) -> Vec<usize> {
         (0..self.width()).collect()
     }

@@ -1,0 +1,288 @@
+Algebraic simulation for the fixed native-vault profile
+9 November 2026
+
+The polynomial opening view admits an efficient witness-free simulator
+outside an explicit set of exceptional verifier coins. Its proof uses
+affine translations of the actual main, quotient and randomization masks.
+
+1. Model and notation
+
+Let F = F_p, p = 2130706433, and E/F have degree eight. Private field
+draws are independent and uniform in this section. Verifier challenges
+are fresh uniform extension-field elements. Commitment digests and
+authentication paths belong to the native hash compiler in compiler.txt.
+
+The logical AIR has 128 rows and transition stride two. Its execution
+rows are 1,3,...,127. In the committed order-256 domain these are the
+coset where X^64=-1. Let V(X)=X^64+1. The remaining 192 values per
+private state column are independent uniform masks: 64 explicit free
+logical rows and 128 hiding-PCS rows. Therefore
+
+    T_j(X)=U_j(X)+V(X)r_j(X), deg U_j<64, deg r_j<192.
+
+This follows from the evaluation isomorphism on 256 distinct points.
+The request columns encode public context and can be coupled identically.
+The execution rotation g has order 64. Quotient chunks have 128 fresh
+mask coordinates and committed degree below 256. Randomization columns
+have degree below 256. The common code domain still has 4096 points.
+The AIR divisor is Z_H=X^128-1. Its actual padded active selector is
+A=(1-X^64+X^128-X^192)/4. Hence A*V=-(X^256-1)/4, a multiple
+of Z_H. Every execution selector vanishes on the free logical rows. Capacity is constrained at row one. Last-row output
+constraints apply at row 127.
+
+Use alpha for the AIR-composition challenge, z for the out-of-domain
+point, gamma for the PCS batching challenge and beta_i for FRI folding
+challenges. Let Q be the set of distinct queried source points. There are
+64 query positions, so |Q| <= 64. The proof opens main columns at z and
+gz, quotient columns at z and randomization columns at z.
+
+The opening view consists of all disclosed base and extension values,
+the final FRI polynomial and every disclosed FRI row. In particular a
+FRI row of arity four contains four aggregate values. Each input batch
+opens one source row at each queried source location. Uniform simulation
+of the complete aggregate polynomial handles all four FRI row values.
+
+2. Interpolation and Frobenius orbits
+
+For a in E, let O(a) be its Frobenius orbit over F. Its cardinality is
+the degree of its minimal polynomial m_a. Values of an F-polynomial at
+O(a) must be Frobenius conjugates. Conversely, arbitrary compatible values
+at distinct orbits and base-field points interpolate to an F-polynomial
+whose degree is below the sum of the orbit degrees. This follows from
+the Chinese remainder theorem for their pairwise coprime minimal
+polynomials, or equivalently from interpolation over the splitting field.
+
+If a != 0, then O(a) and O(ga) are disjoint. Otherwise a^(p^j)=ga for
+some 1 <= j < 8. Iterating the j-th Frobenius 8/gcd(j,8) times gives
+g^(8/gcd(j,8))=1. This contradicts the order 64 of g. For a=0 the two
+points coincide and impose the same evaluation condition.
+
+3. Main-column transport
+
+Take two valid witnesses for the same public (Y,I). Fix alpha, z, gamma,
+the FRI challenges and Q. Exclude z in the public trace or code domains
+where the following evaluation denominators can vanish. These public
+domains and their g-rotations contain at most 8192 points.
+
+Couple the two masked main traces to agree on
+
+    Q union gQ union O(z) union O(gz).
+
+This requires at most 2*64+2*8=144 base-field coordinates. At these
+points V is nonzero. Interpolate the required change in r_j after
+division by V. It has degree below 144, hence below 192. Adding this
+fixed interpolant is a bijection of the uniform main-mask space.
+
+All main observations are equal under this coupling. Both local and
+rotated trace values needed to evaluate constraints agree at Q and O(z).
+The implementation's conservative runtime budget is
+
+    64 + 8*2 = 80 <= 128 for direct PCS disclosures.
+
+The state transport uses 144 <= 192 coordinates. Each quotient mask
+uses 72 <= 128. These separate inequalities justify both the runtime
+PCS guard and the additional AIR transport.
+
+The request columns are public and identical between the two witnesses.
+
+4. Quotient transport
+
+Each individual valid AIR-constraint polynomial C_l(X) is divisible by
+Z_H. Expand the combined quotient in a fixed F-basis e_b of E:
+
+    sum_l alpha^l C_l(X)/Z_H(X) = sum_b e_b Q_b(X).
+
+Its basis coefficients are F-polynomials. The transported main values
+imply that each Q_b agrees between the two witnesses at Q union O(z).
+This conclusion follows by expanding every alpha^l in the fixed basis
+before evaluation. It treats all disclosed quotient-basis openings.
+
+There are eight disjoint quotient cosets H_i of size 128. Write V_i for
+their monic vanishing polynomials and
+
+    L_i = c_i product_(j != i) V_j.
+
+The unmasked Lagrange chunks q_i satisfy sum_i L_i q_i = Q_b. Their
+masks are
+
+    q'_i = q_i + V_i t_i,                 0 <= i < 7,
+    q'_7 = q_7 - V_7 sum_(i<7) (c_i/c_7)t_i,
+
+with independent uniform F-polynomials t_i of degree below 128. The added
+terms cancel in the weighted sum.
+
+At each observation point outside all H_i, choose changes in the first
+seven t_i to cancel the first seven chunk differences. The equality of
+the combined Q_b forces cancellation in the last chunk. At a point of
+H_i the corresponding chunk already agrees because its selector is one.
+The other seven chunk values are adjustable. If i<7, its unused t_i
+value supplies the remaining last-chunk adjustment. If i=7, the last
+mask vanishes and the other seven adjustments are free.
+
+These adjustments are Frobenius compatible. Interpolating them requires
+at most |Q|+8 <= 72 coordinates per independent mask. Their degrees
+remain below 128. Conditional on the main masks, each adjustment is a
+translation of the uniform quotient-mask space. It preserves the full
+joint distribution, including the balancing relation for chunk seven.
+Extra random padding columns can be coupled identically.
+
+5. Complete FRI aggregate transport
+
+Let W be the initial DEEP batched polynomial. A source column P opened
+at a contributes a known power of gamma times
+
+    (P(X)-P(a))/(X-a).
+
+All source columns have degree below 256, so deg W < 255. Couple the
+randomizer's disclosed observations identically at first. Let Delta W
+be the remaining aggregate difference from the transported main and
+quotient polynomials.
+
+The coupled direct observations make Delta W vanish at Q. It also
+vanishes at every point in O(z) except z. To see this, evaluate each
+source difference separately. Its numerator vanishes at the entire
+relevant orbit. For a=z it still has the factor m_z(X)/(X-z). For the
+main opening a=gz, orbit disjointness supplies this same factor. The case
+z=0 has no additional orbit point to check.
+
+Consequently
+
+    Delta W(X) = A(X) B(X),
+    A(X) = Z_Q(X) m_z(X)/(X-z),
+    deg B < 256-|Q|-deg(m_z),
+
+where Z_Q is the monic product of X-q over distinct q in Q.
+
+The randomization batch contains sixteen independent F-polynomials of
+degree below 256. The first eight are batched with powers
+1,gamma,...,gamma^7. If gamma has degree eight over F, these powers form
+an F-basis of E. Decompose
+
+    -B(X) = sum_(j=0)^7 gamma^j B_j(X),   B_j in F[X].
+
+Translate these eight randomization columns by
+
+    R_j(X) <- R_j(X) + Z_Q(X)m_z(X) B_j(X).
+
+The degree remains below 256. Every randomization observation at Q and
+z is preserved. The aggregate change is -Delta W, because the DEEP
+denominator is X-z. Hence the complete initial aggregate W, all FRI
+folds, every opened FRI row and the final polynomial agree exactly.
+
+The translations are triangular: the main translation is fixed, quotient
+translations may depend on the main masks, and the randomizer translation
+may depend on both. Each step is conditionally bijective on its uniform
+mask space. Their composition preserves the full product distribution.
+
+6. Efficient simulation
+
+Sample the honest verifier coins and the query positions. Sample the
+main values at Q union gQ union O(z) union O(gz) from their uniform
+Frobenius-compatible evaluation spaces. These spaces are independent of
+the witness because the main-mask evaluation map is onto.
+
+Evaluate each constraint quotient at Q union O(z) from those main
+values and the public preprocessing. Sample quotient-chunk observations
+uniformly in the affine fibers of the corresponding Lagrange equations.
+The translations in Section 4 show that these are their exact conditional
+distributions. Sample the randomizer observations and public-padding
+observations with their prescribed distributions.
+
+The disclosed source values determine W at Q and O(z)\{z}. Conditional
+on those values, the randomizer transport spans the complete kernel of
+these evaluations. Thus W is uniform in the affine space of E-polynomials
+of degree below 255 with those values. Its remaining dimension is
+
+    255-(|Q|+deg(m_z)-1) = 256-|Q|-deg(m_z) >= 184.
+
+Interpolate one such W, add a uniformly random kernel polynomial, and
+compute its complete FRI fold sequence. Return its queried rows and
+final polynomial together with the sampled direct observations. Every
+step is finite-field linear algebra of polynomial size. All inverse
+hints are determined by public challenges and query points.
+
+This simulator establishes the distribution of the full algebraic
+opening view from public (Y,I), including all quotient coordinates and
+all FRI leaf values.
+
+7. Exceptional coins and repeated use
+
+Every proper subfield of E lies in F_(p^4). A uniform gamma therefore
+fails the degree-eight basis condition with probability exactly p^-4.
+The excluded z-domain probability is at most 8192/p^8. Taking a union
+bound gives
+
+    delta_alg <= p^-4 + 8192/p^8,
+    -log2(delta_alg) approximately 123.95474.
+
+Conditional on the complementary event, simulation is exact. The
+unconditional total variation distance is at most delta_alg. S fresh
+independent-coin authorizations have distance at most S*delta_alg by
+successive conditional simulation. Classical adaptive request selection
+is permitted in this algebraic honest-verifier experiment.
+
+The implementation supplies seeded coins and hash-derived verifier
+challenges. The joint generator hybrid and native adaptive quantum
+compiler supply the additional terms for that experiment. Twenty uniform
+base-field salt elements have entropy 20*log2(p), approximately 619.77
+bits, in the independent-coin hybrid.
+
+8. Finite checks and references
+
+check_profile.py verifies a Proth primality certificate for p, Rabin's
+irreducibility criterion for X^8-3, both linear-layer ranks, bijectivity
+of the cube map on F, the order of g, proper-subfield dimension, source
+opening counts and the finite interpolation budgets. finite-profile.json
+records exact rational values and source fingerprints.
+
+The Lagrange mask construction is described in Ulrich Haboeck and
+Al Kindi, A note on adding zero-knowledge to STARKs, Section 4.2:
+https://eprint.iacr.org/2024/1037
+
+The argument above includes the disclosed quotient basis coefficients,
+the rotated main opening and complete aggregate-polynomial transport
+for this profile.
+
+9. Causal algebraic sampling
+
+The algebraic simulation can also sample its messages in verifier order.
+At z, sample the main and quotient observations in the spaces described
+above. Sample each R_j(z) uniformly in F(z), with the appropriate
+Frobenius compatibility. Repeated opening points impose one shared value.
+After gamma, consider the aggregate with no source query fixed yet.
+The randomizer transport with |Q|=0 shows that W is uniform among
+degree-below-255 E-polynomials with its determined values on O(z)\{z}.
+This conditional law depends only on the disclosed observations.
+
+Sample that complete W. Each subsequent beta_i determines its next fold
+and eventually the final constant. After the source queries are sampled,
+draw their main and quotient observations conditioned on the earlier
+z-observations. The complete W is independent of their undisclosed
+polynomials given those earlier observations, by the same surjection of
+the randomizer masks.
+
+For a queried base point q, write W_other(q) for the DEEP contribution
+of the main, quotient and public preprocessing rows. The randomizer row
+must satisfy
+
+    sum_(j<16) gamma^j R_j(q)
+      = sum_(j<16) gamma^j R_j(z)
+        + (q-z) [W(q)-W_other(q)].
+
+This is a surjective F-linear equation from F^16 to E. Choose the last
+eight coordinates uniformly in F and solve uniquely for the first eight
+using the gamma basis. It gives the uniform affine fiber at q.
+
+These fibers are jointly compatible with the earlier R_j(z) and complete
+W. Indeed the kernel of the coefficient map
+
+    (u_0,...,u_15) -> sum_j gamma^j u_j
+
+has F-dimension eight. Multiply polynomial vectors in this kernel by
+m_z(X). Their evaluations cover the entire kernel independently at Q,
+because |Q|+deg(m_z) <= 72 < 256. Thus this sampling law is the exact
+conditional distribution of every disclosed randomizer row.
+
+The construction samples the algebraic messages causally. simulation.txt
+and compiler.txt establish the native commitments and continued quantum
+experiment, including the complete buffered response groups.

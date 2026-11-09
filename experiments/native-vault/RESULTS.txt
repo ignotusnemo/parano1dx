@@ -1,131 +1,109 @@
-Parano1d-secret native vaults on Base and Solana
+Selected profile measurements
+9 November 2026
 
-Both signed local lifecycles passed. Each vault received one native coin
-and released 0.25 after complete proof verification. The final transition
-consumed its persistent nonce. Independent relayers completed the jobs.
+Wallet
 
-Base
+Intel Core i7-1365U laptop.
+Median proof generation: 18.75 ms.
+Fresh proofs verify against the selected public preprocessing key.
+Measurement record: results/profile-optimization/optimized-prover.json.
+Background load and temperature were not controlled.
 
-  Local chain ID:             8453.
-  Complete withdrawal:        10 transactions.
-  Total authorization gas:    103,890,467.
-  Maximum transaction gas:    11,820,999.
-  Per-transaction gas limit:   16,777,216.
-  Verifier runtime code:      19,169 bytes.
-  Vault runtime code:         4,235 bytes.
-  Runtime code limit:         24,576 bytes.
-  Full network fee estimate:  0.000625860359 ETH, approximately $1.40.
-  Execution component:        $1.393670.
-  Ethereum data component:    $0.005629.
-  Configured operator fee:    $0.000000.
-  Mainnet fee block:          54,705,166.
-  Mainnet fee quote:          2026-11-08T09:50:09.029Z.
-  Included priority fee:      0.001000 gwei.
+EVM
 
-The successful local run uses Base chain ID and its own derived authority.
-The fee calculation reprices the actual unsigned RLP transactions through
-GasPriceOracle.getL1Fee and getOperatorFee at one pinned mainnet block.
-The oracle adds signature padding. Local execution gas includes calldata.
-The quote checks the L1 fee upper bounds and per-transaction DA footprint.
-Shared deployments, wallet creation and rejected tests are separate costs.
-The operator component is a Base protocol setting. A commercial relay
-service can set its own price separately. No transaction was broadcast.
+Complete authorization: 7 transactions.
+Total gas: 71,160,950.
+Maximum transaction gas: 11,507,479.
+Maximum signed transaction: 126478 bytes.
+Verifier bytecode: 17713 bytes.
+The complete deposit, authorization and withdrawal lifecycle passes.
+Record: results/optimized-evm/evm-vault.json.
 
-Solana
+Solana v1
 
-  Original native proof:      299,768 bytes.
-  Transmitted public witness: 286,925 bytes.
-  Complete withdrawal:        87 signed transactions.
-  Upload-only transactions:   72.
-  Verification windows:       14, group size 5.
-  Maximum verification:       1,140,062 CU.
-  Protocol CU budget:         1,400,000 per transaction.
-  Network transaction fees:   0.000470 SOL, approximately $0.04.
-  Mainnet reserve quote:      0.21465540 SOL, approximately $19.15.
-  Local VM reserve refunded:  0.29409480 SOL.
-  Reserve fully refunded:     true.
-  Temporary account size:     42,127 bytes.
-  Persistent vault state:     80 bytes, plus its permanent reserve.
+Complete authorization: 91 transactions.
+Verification transactions: 12, including preparation.
+Maximum verification cost: 1,353,196 CU.
+Protocol transaction limit: 1,400,000 CU.
+Temporary proof-account size: 49207 bytes.
+Temporary reserve: 0.343372 SOL, fully refunded.
+The complete deposit, authorization and withdrawal lifecycle passes.
+Record: results/optimized-solana/solana-vault.json.
 
-The temporary account holds a 256-byte header, a 9,792-byte verifier cache,
-the previous 7,212-byte verified query and a reusable 24,867-byte window.
-Queries follow the sorted multiset of all 64 transcript indices. Repeated
-leaves and authentication nodes are transported by a lossless delta from
-the previous verified query. Every expanded query checks four input roots,
-five FRI roots, opening reductions, all folds and the final polynomial.
-Groups verify every included query before atomically advancing progress.
-The last upload and verification share one transaction when they fit.
-Fresh proof randomness changes delta sizes and transaction counts.
+Validation
 
-Every verification step reconstructs the request and checks the vault,
-authority, nonce, expiry and parameter identity. A failed or incomplete
-query preserves the accepted cache and prefix. The final accepted query
-consumes the nonce and releases SOL atomically. Closing the temporary
-account returns its full reserve. Network fees use zero priority fee.
-Program deployment, account creation outside the job and rejection tests
-are priced separately.
+The selected lifecycles verify all 64 positions, reject modified requests,
+paths, field values and inverse hints, protect contiguous progress,
+consume the nonce once and recover after an interrupted relayer.
+The native streamed checker validates all query batch sizes one to six.
+Signed Solana v1 wires are checked with their corresponding local SBF
+instruction replay. These are local execution measurements.
 
-Latency and relayer recovery
+Comparison with the published research
 
-  Base native proving:        53.03 ms.
-  Solana native proving:      54.39 ms.
-  Base local VM submissions:  7.315 seconds.
-  Solana local VM submissions:0.078 seconds.
-  Base local fixture cycle:   7.593 seconds.
-  Solana local fixture cycle: 0.297 seconds.
+Baseline: the signed local-withdrawal table in the 8 November article.
+https://lab.parano1d.org/research/native-asset-vaults/
 
-These are one-sample CPU measurements on the recorded host. Base uses a
-JavaScript EVM, and Solana uses SBF in LiteSVM. Fixture cycles include the
-prover's reference checks, public transport expansion and successful
-transaction processing. Public Devnet scheduling, inclusion and observed finality are
-recorded separately below. Chain transaction counts describe the
-transport workload. They do not prescribe one block per transaction.
+Measurement                            Published           Current
+Wallet proof generation                53.03 / 54.39 ms    18.75 ms median
+EVM authorization transactions         10                  7
+Total EVM gas                          103,890,467         71,160,950
+Solana v1 authorization transactions   87                  91
+Solana ordered verification tx         14                  12
+Maximum Solana verification CU         1,140,062           1,353,196
 
-Base relayer recovery reconstructs the public cache and accepted prefix
-after a simulated lost batch response. Solana resumes a partially uploaded
-window from its chunk bitmap after client restart and recovers after a
-lost verification response. Chunks can arrive concurrently in any order.
-Retried old frames cannot advance progress. Altered recipients, amounts,
-nonces, expiry, openings, FRI rows, paths and inverses reject. No partial
-step releases funds. Recipient-account resizing preserves verification.
+EVM gas decreases by 31.5%. Solana requires two fewer ordered verification
+transactions. Its complete fixture uses four more transactions and a
+higher peak CU charge.
 
-Configuration and security
+The published wallet values are individual CPU samples. The current
+value is a nine-proof median on an Intel Core i7-1365U laptop. Both measure
+proof generation with preprocessing and trace construction timed
+separately. Public-network delivery times have their published records.
+Baseline and original evidence: results/profile-optimization/published-baseline.json.
 
-The profile uses KoalaBear Poseidon2 and a hiding FRI proof with 64 queries,
-blowup eight, extension degree eight and SHA-256 || Keccak-256 commitments.
-The transport optimizations preserve that authority relation and query
-multiset. PROTOCOL.txt specifies the acceptance invariant and conditions.
-The concrete quantum chosen-request reduction, repeated-use privacy bound
-and cryptanalytic assessment concern this exact external-vault profile.
-Production security validation includes external review of the verifier
-ports, streaming state machine and deployment policy. Mainnet latency and finality under production load remain measurements
-for deployment validation.
+Public testnet withdrawals
 
-Evidence
+Network and case                 Transactions     Charge             Confirmed
+Base Sepolia                     7                71,251,369 gas     16.81 s
+Solana Devnet v1                 91               1,346,251 CU max   23.01 s
+Solana Devnet v1, packet loss     92               1,364,077 CU max   25.21 s
 
-  results/base/evm-vault.json
-  results/base/native-proof.json
-  results/base/fee-quote.json
-  results/solana-current-local/solana-vault.json
-  results/solana-current-local/solana-adversarial.json
-  results/solana-current-local/stream-native-check.json
-  results/fee-projection.json
-  results/latency.json
-  results/market-quotes.json
-  results/host.json
+The Solana cases use twelve ordered verification windows. Fees were
+0.000460 and 0.000465 test SOL. Both temporary reserves were fully
+returned. The normal case temporarily reserved 0.25289764 test SOL.
+Base authorization cost 0.000427672327237518 test ETH, with zero
+operator fee. No real assets were used.
 
-README.txt contains the reproduction commands. Local fixtures use public
-research roots. Public Devnet fixtures use an owner-only private research
-root and contain public proof and transaction data.
+Each timer starts before proof preparation and ends at observed
+withdrawal confirmation. Deployment and deposits precede it. These are
+individual network observations from a QEMU Virtual CPU version 2.5+
+relayer host. Its proof-generation samples range from 31.97 to 41.60 ms.
+The laptop benchmark above is a separate measurement.
 
-Public Solana Devnet withdrawals
+Independent RPC audits verified signed transactions, deployed code,
+all 64 query positions, request binding, payouts, fees and both Solana
+reserve refunds. Each live runner also checked nonce consumption.
+The faulted Solana run recovered
+a missing chunk after packet reordering. Its audit checked finalized
+data for every captured transaction.
 
-Public Devnet observations from the research VPS. Timers include proof preparation, temporary-account creation, delivery and observed confirmation. Shared deployment and vault setup precede the timer. Payloads use direct validator TPU QUIC, with RPC and WebSocket state observations.
+Receipts, withdrawal links and audit hashes:
+results/public-optimized-summary.json.
 
-Normal v1 delivery: confirmed 18.083 s, finality observed 21.634 s, 88 unique transactions, fee 0.000445 test SOL, reserve 0.21075396 test SOL returned. Separate finalized-data verification passed.
-Dropped packet and reordered v1 delivery: confirmed 22.336 s, finality observed 26.036 s, 91 unique transactions, fee 0.000460 test SOL, reserve 0.22599396 test SOL returned. Separate finalized-data verification passed.
+Security
 
-Public Base Sepolia withdrawal
+The exact quantum source density is about 2^-154.941. The complete ideal
+resource envelope is below 0.325524 at the Category 1 reference budgets
+under the explicit batch response-price condition c>=2^20. Its
+primitive-advantage margin is 0.174476726375217. The security report contains the full native
+reduction, finite calculations and exact application conditions.
 
-L2 receipt confirmation: 14.455 s. Authorization: 10 transactions, 103,886,415 gas, 0.000623630745261972 test ETH. Safe observed: 178.85 s. Finalized observed: 1171.69 s.
-A second public RPC verified all signed transactions, canonical receipts, code hashes, typed request, all 64 query positions, nonce consumption, payout balances and fee reconciliation. Mainnet pricing is quoted separately.
+The preliminary NIST-style resource assessment evaluates native
+fixed-prefix SHA-256 and Keccak circuits, grind-output projections
+and a one-bit phase construction. The smallest sampled data product
+is 3,014,449 under optimistic unit-cost XOR/AND accounting. The report
+states the evaluated circuit family and broader cryptanalytic conditions.
+
+../../SECURITY.html
+../../papers/native-vault-security-report.pdf
